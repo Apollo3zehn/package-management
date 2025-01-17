@@ -277,8 +277,6 @@ public class PackageControllerTests
 
     #region Provider: git_tag
 
-    // Disable when running on GitHub Actions. It seems that there git ls-remote ignores the credentials (git clone works).
-#if !CI
     [Fact]
     public async Task CanDiscover_git_tag()
     {
