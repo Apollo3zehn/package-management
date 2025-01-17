@@ -1,0 +1,15 @@
+{
+  "include": [
+    "src/package-management/python",
+    "tests/package-management/python-tests",
+  ],
+  "stubPath": "",
+  "executionEnvironments":[
+    {
+      "root": ".",
+      "extraPaths": [
+        "src/package-management/python"
+      ]
+    }
+  ]
+}
