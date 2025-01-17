@@ -3,6 +3,7 @@
 
 using System.Text.Json;
 using Apollo3zehn.PackageManagement.Core;
+using Microsoft.Extensions.Logging;
 
 namespace Apollo3zehn.PackageManagement.Services;
 
@@ -34,16 +35,29 @@ public interface IPackageService
     /// Gets all package references.
     /// </summary>
     Task<IReadOnlyDictionary<Guid, PackageReference>> GetAllAsync();
+
+    /// <summary>
+    /// Gets all package versions.
+    /// </summary>
+    /// <param name="packageReferenceId">The package reference.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    Task<string[]?> GetVersionsAsync(
+        Guid packageReferenceId,
+        CancellationToken cancellationToken);
 }
 
-internal class PackageService(IPackageManagementDatabaseService databaseService)
-    : IPackageService
+internal class PackageService(
+    IPackageManagementDatabaseService databaseService,
+    ILoggerFactory loggerFactory
+) : IPackageService
 {
     private readonly SemaphoreSlim _semaphoreSlim = new(1, 1);
 
     private Dictionary<Guid, PackageReference>? _cache;
 
     private readonly IPackageManagementDatabaseService _databaseService = databaseService;
+
+    private readonly ILoggerFactory _loggerFactory = loggerFactory;
 
     public Task<Guid> PutAsync(
         PackageReference packageReference)
@@ -86,6 +100,22 @@ internal class PackageService(IPackageManagementDatabaseService databaseService)
             packageReferenceMap => (IReadOnlyDictionary<Guid, PackageReference>)packageReferenceMap,
             saveChanges: false
         );
+    }
+
+    public async Task<string[]?> GetVersionsAsync(
+        Guid packageReferenceId,
+        CancellationToken cancellationToken)
+    {
+        var packageReference = await GetAsync(packageReferenceId);
+
+        if (packageReference is null)
+            return default;
+
+        var controller = new PackageController(
+            packageReference,
+            _loggerFactory.CreateLogger<PackageController>());
+
+        return await controller.GetVersionsAsync(cancellationToken);
     }
 
     private Dictionary<Guid, PackageReference> GetPackageReferenceMap()

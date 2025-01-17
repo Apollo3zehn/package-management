@@ -8,7 +8,7 @@ using Apollo3zehn.PackageManagement.Core;
 
 namespace Apollo3zehn.PackageManagement;
 
-internal partial class PackageController(
+internal class PackageController(
     PackageReference packageReference,
     ILogger<PackageController> logger
 )
@@ -23,15 +23,15 @@ internal partial class PackageController(
 
     public PackageReference PackageReference { get; } = packageReference;
 
-    public async Task<string[]> DiscoverAsync(CancellationToken cancellationToken)
+    public async Task<string[]> GetVersionsAsync(CancellationToken cancellationToken)
     {
-        _logger.LogDebug("Discover package versions using provider {Provider}", PackageReference.Provider);
+        _logger.LogDebug("Get package versions using provider {Provider}", PackageReference.Provider);
 
         var result = PackageReference.Provider switch
         {
             BUILTIN_PROVIDER => ["current"],
-            "local" => await DiscoverLocalAsync(cancellationToken),
-            "git-tag" => await DiscoverGitTagsAsync(cancellationToken),
+            "local" => await GetLocalVersionsAsync(cancellationToken),
+            "git-tag" => await GetGitTagsAsync(cancellationToken),
             _ => throw new ArgumentException($"The provider {PackageReference.Provider} is not supported."),
         };
 
@@ -59,6 +59,7 @@ internal partial class PackageController(
             var depsJsonFilePath = Directory
                 .EnumerateFiles(restoreFolderPath, $"*{depsJsonExtension}", SearchOption.AllDirectories)
                 .SingleOrDefault() ?? throw new Exception($"Could not determine the location of the .deps.json file in folder {restoreFolderPath}.");
+                
             var entryDllPath = depsJsonFilePath[..^depsJsonExtension.Length] + ".dll" ?? throw new Exception($"Could not determine the location of the entry DLL file in folder {restoreFolderPath}.");
             _loadContext = new PackageLoadContext(entryDllPath);
 
@@ -159,7 +160,7 @@ internal partial class PackageController(
 
     #region local
 
-    private Task<string[]> DiscoverLocalAsync(CancellationToken cancellationToken)
+    private Task<string[]> GetLocalVersionsAsync(CancellationToken cancellationToken)
     {
         var rawResult = new List<string>();
         var configuration = PackageReference.Configuration;
@@ -176,7 +177,7 @@ internal partial class PackageController(
 
             var folderName = Path.GetFileName(folderPath);
             rawResult.Add(folderName);
-            _logger.LogDebug("Discovered package version {PackageVersion}", folderName);
+            _logger.LogDebug("Found package version {PackageVersion}", folderName);
         }
 
         var result = rawResult.OrderBy(value => value).Reverse();
@@ -260,7 +261,7 @@ internal partial class PackageController(
 
     #region git-tag
 
-    private async Task<string[]> DiscoverGitTagsAsync(CancellationToken cancellationToken)
+    private async Task<string[]> GetGitTagsAsync(CancellationToken cancellationToken)
     {
         const string refPrefix = "refs/tags/";
 
@@ -316,7 +317,7 @@ internal partial class PackageController(
                 ? default :
                 $" Reason: {await process.StandardError.ReadToEndAsync(cancellationToken)}";
 
-            throw new Exception($"Unable to discover tags for repository {escapedUriWithoutUserInfo}.{error}");
+            throw new Exception($"Unable to find tags for repository {escapedUriWithoutUserInfo}.{error}");
         }
 
         result.Reverse();

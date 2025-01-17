@@ -4,6 +4,7 @@
 using Apollo3zehn.PackageManagement;
 using Apollo3zehn.PackageManagement.Core;
 using Apollo3zehn.PackageManagement.Services;
+using Microsoft.Extensions.Logging;
 using Moq;
 using System.Text.Json;
 using Xunit;
@@ -153,7 +154,8 @@ public class PackageServiceTests
             .Setup(databaseService => databaseService.WritePackageReferenceMap())
             .Returns(() => File.OpenWrite(filePath));
 
-        var packageService = new PackageService(databaseService);
+        var loggerFactory = new LoggerFactory();
+        var packageService = new PackageService(databaseService, loggerFactory);
 
         return packageService;
     }

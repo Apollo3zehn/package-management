@@ -41,15 +41,6 @@ public interface IExtensionHive<T> where T : class
         IReadOnlyDictionary<Guid, PackageReference> packageReferenceMap,
         IProgress<double> progress,
         CancellationToken cancellationToken);
-
-    /// <summary>
-    /// Gets all package versions.
-    /// </summary>
-    /// <param name="packageReference">The package reference.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    Task<string[]> GetVersionsAsync(
-        PackageReference packageReference,
-        CancellationToken cancellationToken);
 }
 
 internal class ExtensionHive<T>(
@@ -130,17 +121,6 @@ internal class ExtensionHive<T>(
         }
 
         _packageControllerMap = packageControllerMap;
-    }
-
-    public Task<string[]> GetVersionsAsync(
-        PackageReference packageReference,
-        CancellationToken cancellationToken)
-    {
-        var controller = new PackageController(
-            packageReference,
-            _loggerFactory.CreateLogger<PackageController>());
-
-        return controller.DiscoverAsync(cancellationToken);
     }
 
     public IEnumerable<Type> GetExtensions()

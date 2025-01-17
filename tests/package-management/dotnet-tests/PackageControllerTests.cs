@@ -119,7 +119,7 @@ public class PackageControllerTests
         var packageController = new PackageController(packageReference, NullLogger<PackageController>.Instance);
 
         var actual = (await packageController
-            .DiscoverAsync(CancellationToken.None))
+            .GetVersionsAsync(CancellationToken.None))
             .ToArray();
 
         Assert.Equal(expected.Length, actual.Length);
@@ -198,7 +198,7 @@ public class PackageControllerTests
         var packageController = new PackageController(packageReference, NullLogger<PackageController>.Instance);
 
         var actual = (await packageController
-            .DiscoverAsync(CancellationToken.None))
+            .GetVersionsAsync(CancellationToken.None))
             .ToArray();
 
         Assert.Equal(expected.Length, actual.Length);
