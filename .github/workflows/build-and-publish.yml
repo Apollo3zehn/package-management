@@ -3,14 +3,14 @@ name: Build and Publish
 on:
   push:
     branches:
-      - master
+      - main
 
     tags:
       - '*'
 
   pull_request:
     branches:
-      - master
+      - main
 
 jobs:
 
