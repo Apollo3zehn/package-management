@@ -62,9 +62,6 @@ jobs:
           dotnet build -c Release /p:GeneratePackage=true src/package-management/dotnet/package-management.csproj
           python -m build --wheel --outdir artifacts/package --no-isolation src/package-management/python
 
-      - name: Setup upterm session
-        uses: lhotari/action-upterm@v1
-
       - name: Test
         run: |
           dotnet test -c Release /p:BuildProjectReferences=false
