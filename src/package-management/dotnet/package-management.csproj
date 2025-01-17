@@ -21,9 +21,9 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
   
-  <ItemGroup>
+  <!-- <ItemGroup>
     <None Include="../../doc/images/icon.png" Pack="true" PackagePath="/" />
-  </ItemGroup>
+  </ItemGroup> -->
 
   <ItemGroup>
     <None Include="README.md" Pack="true" PackagePath="/" />
