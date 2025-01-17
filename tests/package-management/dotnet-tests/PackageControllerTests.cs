@@ -314,7 +314,6 @@ public class PackageControllerTests
             Assert.Equal(expectedItem, actualItem);
         }
     }
-#endif
 
     [Fact]
     public async Task CanRestore_git_tag()
