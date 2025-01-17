@@ -59,7 +59,7 @@ internal class PackageController(
             var depsJsonFilePath = Directory
                 .EnumerateFiles(restoreFolderPath, $"*{depsJsonExtension}", SearchOption.AllDirectories)
                 .SingleOrDefault() ?? throw new Exception($"Could not determine the location of the .deps.json file in folder {restoreFolderPath}.");
-                
+
             var entryDllPath = depsJsonFilePath[..^depsJsonExtension.Length] + ".dll" ?? throw new Exception($"Could not determine the location of the entry DLL file in folder {restoreFolderPath}.");
             _loadContext = new PackageLoadContext(entryDllPath);
 
@@ -87,12 +87,14 @@ internal class PackageController(
         var actualRestoreRoot = Path.Combine(restoreRoot, PackageReference.Provider);
 
         _logger.LogDebug("Restore package to {RestoreRoot} using provider {Provider}", actualRestoreRoot, PackageReference.Provider);
+        
         var restoreFolderPath = PackageReference.Provider switch
         {
             "local" => await RestoreLocalAsync(actualRestoreRoot, cancellationToken),
             "git-tag" => await RestoreGitTagAsync(actualRestoreRoot, cancellationToken),
             _ => throw new ArgumentException($"The provider {PackageReference.Provider} is not supported."),
         };
+
         return restoreFolderPath;
     }
 

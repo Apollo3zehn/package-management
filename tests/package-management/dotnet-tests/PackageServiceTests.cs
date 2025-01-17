@@ -41,7 +41,7 @@ public class PackageServiceTests
     }
 
     [Fact]
-    public async Task CanTryGetPackageReference()
+    public async Task CanGetPackageReference()
     {
         // Arrange
         var id1 = Guid.NewGuid();
