@@ -1,12 +1,11 @@
 // MIT License
-// Copyright (c) [2024] [nexus-main]
+// Copyright (c) [2024] [Apollo3zehn]
 
-using System.Text.Json;
-using System.Threading.Tasks;
-using Moq;
 using Apollo3zehn.PackageManagement;
 using Apollo3zehn.PackageManagement.Core;
 using Apollo3zehn.PackageManagement.Services;
+using Moq;
+using System.Text.Json;
 using Xunit;
 
 namespace Services;

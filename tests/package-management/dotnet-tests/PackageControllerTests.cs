@@ -1,10 +1,10 @@
 ﻿// MIT License
-// Copyright (c) [2024] [nexus-main]
+// Copyright (c) [2024] [Apollo3zehn]
 
 using Apollo3zehn.PackageManagement;
 using Apollo3zehn.PackageManagement.Core;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Nexus.Extensibility;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -14,107 +14,6 @@ namespace Other;
 
 public class PackageControllerTests
 {
-    // Need to do it this way because GitHub revokes obvious tokens on commit.
-    // However, this token - in combination with the test user's account
-    // privileges - allows only read-only access to a test project, so there
-    // is no real risk.
-    private static readonly byte[] _token =
-    [
-        0x67,
-        0x69,
-        0x74,
-        0x68,
-        0x75,
-        0x62,
-        0x5F,
-        0x70,
-        0x61,
-        0x74,
-        0x5F,
-        0x31,
-        0x31,
-        0x41,
-        0x46,
-        0x41,
-        0x41,
-        0x45,
-        0x59,
-        0x49,
-        0x30,
-        0x49,
-        0x6D,
-        0x33,
-        0x54,
-        0x51,
-        0x57,
-        0x53,
-        0x74,
-        0x73,
-        0x69,
-        0x30,
-        0x6C,
-        0x5F,
-        0x4B,
-        0x57,
-        0x6F,
-        0x41,
-        0x6E,
-        0x7A,
-        0x43,
-        0x48,
-        0x52,
-        0x50,
-        0x39,
-        0x6F,
-        0x34,
-        0x44,
-        0x30,
-        0x63,
-        0x74,
-        0x75,
-        0x4B,
-        0x38,
-        0x47,
-        0x5A,
-        0x73,
-        0x78,
-        0x31,
-        0x4A,
-        0x4A,
-        0x48,
-        0x30,
-        0x4A,
-        0x64,
-        0x33,
-        0x32,
-        0x41,
-        0x71,
-        0x62,
-        0x66,
-        0x63,
-        0x4A,
-        0x5A,
-        0x44,
-        0x48,
-        0x31,
-        0x42,
-        0x5A,
-        0x36,
-        0x4A,
-        0x43,
-        0x32,
-        0x56,
-        0x46,
-        0x72,
-        0x53,
-        0x4D,
-        0x41,
-        0x70,
-        0x6A,
-        0x79,
-        0x77
-    ];
-
     #region Load
 
     [Fact]
@@ -124,7 +23,7 @@ public class PackageControllerTests
         var extensionFolderPathHash = new Guid(extensionFolderPath.Hash()).ToString();
 
         // create restore folder
-        var restoreRoot = Path.Combine(Path.GetTempPath(), $"Nexus.Tests.{Guid.NewGuid()}");
+        var restoreRoot = Path.Combine(Path.GetTempPath(), $"PackageManagement.Tests.{Guid.NewGuid()}");
         Directory.CreateDirectory(restoreRoot);
 
         try
@@ -173,18 +72,13 @@ public class PackageControllerTests
         var packageController = new PackageController(packageReference, NullLogger<PackageController>.Instance);
         var assembly = await packageController.LoadAsync(restoreRoot, CancellationToken.None);
 
-        var dataSourceType = assembly
+        var loggerType = assembly
             .ExportedTypes
-            .First(type => typeof(IDataSource).IsAssignableFrom(type));
+            .First(type => typeof(ILogger).IsAssignableFrom(type));
 
         // run
-
-        if (Activator.CreateInstance(dataSourceType) is not IDataSource dataSource)
-            throw new Exception("data source is null");
-
-        var exception = await Assert.ThrowsAsync<NotImplementedException>(() => dataSource.EnrichCatalogAsync(default!, CancellationToken.None));
-
-        Assert.Equal(nameof(IDataSource.EnrichCatalogAsync), exception.Message);
+        if (Activator.CreateInstance(loggerType) is not ILogger logger)
+            throw new Exception("logger is null");
 
         // delete should fail
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -244,7 +138,7 @@ public class PackageControllerTests
         var extensionFolderPathHash = new Guid(extensionFolderPath.Hash()).ToString();
 
         // create restore folder
-        var restoreRoot = Path.Combine(Path.GetTempPath(), $"Nexus.Tests.{Guid.NewGuid()}");
+        var restoreRoot = Path.Combine(Path.GetTempPath(), $"PackageManagement.Tests.{Guid.NewGuid()}");
         var restoreFolderPath = Path.Combine(restoreRoot, "local", extensionFolderPathHash, version);
         Directory.CreateDirectory(restoreRoot);
 
@@ -297,7 +191,7 @@ public class PackageControllerTests
             Configuration: new Dictionary<string, string>
             {
                 // required
-                ["repository"] = $"https://{Encoding.ASCII.GetString(_token)}@github.com/nexus-main/git-tag-provider-test-project"
+                ["repository"] = $"https://github.com/Apollo3zehn/git-tags-provider-test-project"
             }
         );
 
@@ -321,8 +215,8 @@ public class PackageControllerTests
         var version = "v2.0.0-beta.1";
 
         // create restore folder
-        var restoreRoot = Path.Combine(Path.GetTempPath(), $"Nexus.Tests.{Guid.NewGuid()}");
-        var restoreFolderPath = Path.Combine(restoreRoot, "git-tag", "github.com_nexus-main_git-tag-provider-test-project", version);
+        var restoreRoot = Path.Combine(Path.GetTempPath(), $"PackageManagement.Tests.{Guid.NewGuid()}");
+        var restoreFolderPath = Path.Combine(restoreRoot, "git-tag", "github.com_apollo3zehn_git-tags-provider-test-project", version);
         Directory.CreateDirectory(restoreRoot);
 
         try
@@ -332,7 +226,7 @@ public class PackageControllerTests
                 Configuration: new Dictionary<string, string>
                 {
                     // required
-                    ["repository"] = $"https://{Encoding.ASCII.GetString(_token)}@github.com/nexus-main/git-tag-provider-test-project",
+                    ["repository"] = $"https://github.com/Apollo3zehn/git-tags-provider-test-project",
                     ["tag"] = version,
                     ["csproj"] = "git-tags-provider-test-project.csproj"
                 }

@@ -6,7 +6,7 @@
   </PropertyGroup>
 	
   <PropertyGroup>
-    <Description>Type definitions to implement the package management for the Nexus system.</Description>
+    <Description>A collection of types to easily implement a plugin system in your Python application. The source code of individual extensions can be located in remote git repositories or in a local folder structure.</Description>
 	  <PackageTags>package management extensions plugins</PackageTags>
     <!-- <PackageIcon>icon.png</PackageIcon> -->
     <PackageReadmeFile>README.md</PackageReadmeFile>

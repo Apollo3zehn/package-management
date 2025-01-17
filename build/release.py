@@ -26,7 +26,7 @@ request_url = re.sub(pattern, r"https://api.github.com/repos/\1/releases", solut
 
 headers = {
     "Authorization": f"token {sys.argv[1]}",
-    "User-Agent": "Nexus",
+    "User-Agent": "Apollo3zehn",
     "Accept": "application/vnd.github.v3+json"
 }
 

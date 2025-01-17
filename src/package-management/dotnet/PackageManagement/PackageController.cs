@@ -1,5 +1,5 @@
 ﻿// MIT License
-// Copyright (c) [2024] [nexus-main]
+// Copyright (c) [2024] [Apollo3zehn]
 
 using System.Diagnostics;
 using System.Reflection;
@@ -15,7 +15,7 @@ internal partial class PackageController(
 {
     public static Guid BUILTIN_ID = new("97d297d2-df6f-4c85-9d07-86bc64a041a6");
 
-    public const string BUILTIN_PROVIDER = "nexus";
+    public const string BUILTIN_PROVIDER = "builtin";
 
     private readonly ILogger _logger = logger;
 

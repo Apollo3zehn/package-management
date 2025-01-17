@@ -1,5 +1,5 @@
 // MIT License
-// Copyright (c) [2024] [nexus-main]
+// Copyright (c) [2024] [Apollo3zehn]
 
 using System.Text.Encodings.Web;
 using System.Text.Json;

@@ -1,12 +1,11 @@
 ﻿// MIT License
-// Copyright (c) [2024] [nexus-main]
+// Copyright (c) [2024] [Apollo3zehn]
 
 using Apollo3zehn.PackageManagement;
 using Apollo3zehn.PackageManagement.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
-using Nexus.Extensibility;
 using Xunit;
 
 namespace Services;
@@ -37,7 +36,7 @@ public class ExtensionHiveTests
                 .Setup(loggerFactory => loggerFactory.CreateLogger(It.IsAny<string>()))
                 .Returns(NullLogger.Instance);
 
-            var hive = new ExtensionHive<IDataSource, IDataWriter>(pathsOptions, NullLogger<ExtensionHive<IDataSource, IDataWriter>>.Instance, loggerFactory);
+            var hive = new ExtensionHive<ILogger>(pathsOptions, NullLogger<ExtensionHive<ILogger>>.Instance, loggerFactory);
             var version = "v0.1.0";
 
             var packageReference = new PackageReference(
@@ -59,10 +58,11 @@ public class ExtensionHiveTests
             await hive.LoadPackagesAsync(packageReferenceMap, new Progress<double>(), CancellationToken.None);
 
             // instantiate
-            hive.GetInstance<IDataSource>("TestExtension.TestDataSource");
-            hive.GetInstance<IDataWriter>("TestExtension.TestDataWriter");
+            var logger = hive.GetInstance("Foo.MyLogger");
 
-            Assert.Throws<Exception>(() => hive.GetInstance<IDataSource>("TestExtension.TestDataWriter"));
+            Assert.NotNull(logger);
+            Assert.False(logger.IsEnabled(LogLevel.Trace));
+            Assert.True(logger.IsEnabled(LogLevel.Debug));
         }
         finally
         {
