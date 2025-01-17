@@ -6,8 +6,8 @@ from pathlib import Path
 from typing import Awaitable, Callable, Optional, TypeVar
 from uuid import UUID
 
-from _encoder import JsonEncoder
-from _typedefs import PackageReference
+from ._encoder import JsonEncoder
+from ._typedefs import PackageReference
 
 T = TypeVar("T")
 
