@@ -66,7 +66,7 @@ class PackageService:
                 with open(package_references_file_path, "r") as file:
                     json_value = json.load(file)
                 
-                self._cache = JsonEncoder().decode(dict[UUID, PackageReference], json_value)
+                self._cache = JsonEncoder.decode(dict[UUID, PackageReference], json_value)
 
             else:
                 return {}
@@ -91,7 +91,7 @@ class PackageService:
 
                 Path(folder_path).mkdir(parents=True, exist_ok=True)
 
-                json_value = JsonEncoder().encode(package_reference_map)
+                json_value = JsonEncoder.encode(package_reference_map)
 
                 with open(package_references_file_path, "w") as file:
                     json.dump(json_value, file, indent=2)
