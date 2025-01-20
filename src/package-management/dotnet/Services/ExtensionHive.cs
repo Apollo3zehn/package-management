@@ -52,7 +52,7 @@ internal class ExtensionHive<T>(
     private readonly ILogger<ExtensionHive<T>> _logger = logger;
 
     private readonly ILoggerFactory _loggerFactory = loggerFactory;
-    
+
     private readonly IPackageManagementPathsOptions _pathsOptions = pathsOptions;
 
     private Dictionary<Guid, (PackageController, ReadOnlyCollection<Type>)>? _packageControllerMap = default!;
@@ -62,7 +62,7 @@ internal class ExtensionHive<T>(
         IProgress<double> progress,
         CancellationToken cancellationToken)
     {
-        // clean up
+        // Clean up
         if (_packageControllerMap is not null)
         {
             _logger.LogDebug("Unload previously loaded packages");
@@ -80,7 +80,7 @@ internal class ExtensionHive<T>(
             Configuration: []
         );
 
-        // build new
+        // Build new
         var packageControllerMap = new Dictionary<Guid, (PackageController, ReadOnlyCollection<Type>)>();
         var currentCount = 0;
         var totalCount = packageReferenceMap.Count();
@@ -126,17 +126,10 @@ internal class ExtensionHive<T>(
     public IEnumerable<Type> GetExtensions()
     {
         if (_packageControllerMap is null)
-        {
             return Enumerable.Empty<Type>();
-        }
 
         else
-        {
-            var types = _packageControllerMap.SelectMany(entry => entry.Value.Item2);
-
-            return types
-                .Where(type => typeof(T).IsAssignableFrom(type));
-        }
+            return _packageControllerMap.SelectMany(entry => entry.Value.Item2);
     }
 
     public Guid GetPackageReferenceId(string fullName)
@@ -176,7 +169,7 @@ internal class ExtensionHive<T>(
             .SelectMany(entry => entry.Value.Item2.Select(type => (entry.Key, entry.Value.Item1, type)));
 
         (packageReferenceId, packageController, type) = typeInfos
-            .Where(typeInfo => typeof(T).IsAssignableFrom(typeInfo.Type) && typeInfo.Type.FullName == fullName)
+            .Where(typeInfo => typeInfo.Type.FullName == fullName)
             .FirstOrDefault();
 
         if (type is null)

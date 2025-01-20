@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace Apollo3zehn.PackageManagement.Services;
 
 /// <summary>
-/// An interface which defined interactions with the database.
+/// An interface which defines interactions with the database.
 /// </summary>
 public interface IPackageManagementDatabaseService
 {

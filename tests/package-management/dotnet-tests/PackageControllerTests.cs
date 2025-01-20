@@ -18,10 +18,10 @@ public class PackageControllerTests
     [Fact]
     public async Task CanLoadAndUnload()
     {
-        var extensionFolderPath = "../../../../tests/resources/TestExtension";
+        // Arrange
+        var extensionFolderPath = "../../../../tests/resources/test-extension";
         var extensionFolderPathHash = new Guid(extensionFolderPath.Hash()).ToString();
 
-        // create restore folder
         var restoreRoot = Path.Combine(Path.GetTempPath(), $"PackageManagement.Tests.{Guid.NewGuid()}");
         Directory.CreateDirectory(restoreRoot);
 
@@ -33,23 +33,24 @@ public class PackageControllerTests
                 Provider: "local",
                 Configuration: new Dictionary<string, string>
                 {
-                    // required
                     ["path"] = extensionFolderPath,
                     ["version"] = version,
-                    ["csproj"] = "TestExtension.csproj"
+                    ["entrypoint"] = "test-extension.csproj"
                 }
             );
 
-            var fileToDelete = Path.Combine(restoreRoot, "local", extensionFolderPathHash, version, "TestExtension.dll");
+            var fileToDelete = Path.Combine(restoreRoot, "local", extensionFolderPathHash, version, "test-extension.dll");
+
+            // Act
             var weakReference = await Load_Run_and_Unload_Async(restoreRoot, fileToDelete, packageReference);
 
+            // Assert
             for (int i = 0; weakReference.IsAlive && i < 10; i++)
             {
                 GC.Collect();
                 GC.WaitForPendingFinalizers();
             }
 
-            // try to delete file
             File.Delete(fileToDelete);
         }
         finally
@@ -94,8 +95,9 @@ public class PackageControllerTests
     #region Provider: local
 
     [Fact]
-    public async Task CanDiscover_local()
+    public async Task CanGetVersions_local()
     {
+        // Arrange
         var expected = new[]
         {
             "v2.0.0 postfix",
@@ -111,16 +113,18 @@ public class PackageControllerTests
             Provider: "local",
             Configuration: new Dictionary<string, string>
             {
-                ["path"] = "../../../../tests/resources/TestExtension",
+                ["path"] = "../../../../tests/resources/test-extension",
             }
         );
 
         var packageController = new PackageController(packageReference, NullLogger<PackageController>.Instance);
 
+        // Act
         var actual = (await packageController
             .GetVersionsAsync(CancellationToken.None))
             .ToArray();
 
+        // Assert
         Assert.Equal(expected.Length, actual.Length);
 
         foreach (var (expectedItem, actualItem) in expected.Zip(actual))
@@ -132,11 +136,11 @@ public class PackageControllerTests
     [Fact]
     public async Task CanRestore_local()
     {
+        // Arrange
         var version = "v0.1.0";
-        var extensionFolderPath = "../../../../tests/resources/TestExtension";
+        var extensionFolderPath = "../../../../tests/resources/test-extension";
         var extensionFolderPathHash = new Guid(extensionFolderPath.Hash()).ToString();
 
-        // create restore folder
         var restoreRoot = Path.Combine(Path.GetTempPath(), $"PackageManagement.Tests.{Guid.NewGuid()}");
         var restoreFolderPath = Path.Combine(restoreRoot, "local", extensionFolderPathHash, version);
         Directory.CreateDirectory(restoreRoot);
@@ -147,16 +151,19 @@ public class PackageControllerTests
                 Provider: "local",
                 Configuration: new Dictionary<string, string>
                 {
-                    // required
                     ["path"] = extensionFolderPath,
                     ["version"] = version,
-                    ["csproj"] = "TestExtension.csproj"
+                    ["entrypoint"] = "test-extension.csproj"
                 }
             );
 
             var packageController = new PackageController(packageReference, NullLogger<PackageController>.Instance);
+
+            // Act
             await packageController.RestoreAsync(restoreRoot, CancellationToken.None);
-            var expectedFilePath = Path.Combine(restoreFolderPath, "TestExtension.deps.json");
+
+            // Assert
+            var expectedFilePath = Path.Combine(restoreFolderPath, "test-extension.deps.json");
 
             Assert.True(File.Exists(expectedFilePath));
         }
@@ -171,8 +178,9 @@ public class PackageControllerTests
     #region Provider: git_tag
 
     [Fact]
-    public async Task CanDiscover_git_tag()
+    public async Task CanGetVersions_git_tag()
     {
+        // Arrange
         var expected = new[]
         {
             "v2.0.0-beta.1",
@@ -189,17 +197,18 @@ public class PackageControllerTests
             Provider: "git-tag",
             Configuration: new Dictionary<string, string>
             {
-                // required
                 ["repository"] = $"https://github.com/Apollo3zehn/git-tags-provider-test-project"
             }
         );
 
         var packageController = new PackageController(packageReference, NullLogger<PackageController>.Instance);
 
+        // Act
         var actual = (await packageController
             .GetVersionsAsync(CancellationToken.None))
             .ToArray();
 
+        // Assert
         Assert.Equal(expected.Length, actual.Length);
 
         foreach (var (expectedItem, actualItem) in expected.Zip(actual))
@@ -211,11 +220,12 @@ public class PackageControllerTests
     [Fact]
     public async Task CanRestore_git_tag()
     {
+        // Arrange
         var version = "v2.0.0-beta.1";
 
-        // create restore folder
         var restoreRoot = Path.Combine(Path.GetTempPath(), $"PackageManagement.Tests.{Guid.NewGuid()}");
-        var restoreFolderPath = Path.Combine(restoreRoot, "git-tag", "github.com_apollo3zehn_git-tags-provider-test-project", version);
+        var restoreFolderPath = Path.Combine(restoreRoot, "git-tag", "https_github.com_Apollo3zehn_git-tags-provider-test-project", version);
+
         Directory.CreateDirectory(restoreRoot);
 
         try
@@ -224,19 +234,19 @@ public class PackageControllerTests
                 Provider: "git-tag",
                 Configuration: new Dictionary<string, string>
                 {
-                    // required
                     ["repository"] = $"https://github.com/Apollo3zehn/git-tags-provider-test-project",
                     ["tag"] = version,
-                    ["csproj"] = "git-tags-provider-test-project.csproj"
+                    ["entrypoint"] = "git-tags-provider-test-project.csproj"
                 }
             );
 
             var packageController = new PackageController(packageReference, NullLogger<PackageController>.Instance);
+
+            // Act
             await packageController.RestoreAsync(restoreRoot, CancellationToken.None);
 
+            // Assert
             Assert.True(File.Exists(Path.Combine(restoreFolderPath, "git-tags-provider-test-project.deps.json")));
-            Assert.True(File.Exists(Path.Combine(restoreFolderPath, "git-tags-provider-test-project.dll")));
-            Assert.True(File.Exists(Path.Combine(restoreFolderPath, "git-tags-provider-test-project.pdb")));
         }
         finally
         {

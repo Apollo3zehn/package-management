@@ -1,10 +1,10 @@
 ﻿// MIT License
 // Copyright (c) [2024] [Apollo3zehn]
 
+using Apollo3zehn.PackageManagement.Core;
+using Microsoft.Extensions.Logging;
 using System.Diagnostics;
 using System.Reflection;
-using Microsoft.Extensions.Logging;
-using Apollo3zehn.PackageManagement.Core;
 
 namespace Apollo3zehn.PackageManagement;
 
@@ -87,7 +87,7 @@ internal class PackageController(
         var actualRestoreRoot = Path.Combine(restoreRoot, PackageReference.Provider);
 
         _logger.LogDebug("Restore package to {RestoreRoot} using provider {Provider}", actualRestoreRoot, PackageReference.Provider);
-        
+
         var restoreFolderPath = PackageReference.Provider switch
         {
             "local" => await RestoreLocalAsync(actualRestoreRoot, cancellationToken),
@@ -134,7 +134,7 @@ internal class PackageController(
     )
     {
         if (!File.Exists(csprojFilePath))
-            throw new Exception($"The .csproj file {csprojFilePath} does not exist.");
+            throw new Exception($"The file {csprojFilePath} does not exist.");
 
         Directory.CreateDirectory(targetFolderPath);
 
@@ -182,9 +182,12 @@ internal class PackageController(
             _logger.LogDebug("Found package version {PackageVersion}", folderName);
         }
 
-        var result = rawResult.OrderBy(value => value).Reverse();
+        var result = rawResult
+            .OrderBy(value => value)
+            .Reverse()
+            .ToArray();
 
-        return Task.FromResult(result.ToArray());
+        return Task.FromResult(result);
     }
 
     private async Task<string> RestoreLocalAsync(string restoreRoot, CancellationToken cancellationToken)
@@ -197,8 +200,8 @@ internal class PackageController(
         if (!configuration.TryGetValue("version", out var version))
             throw new ArgumentException("The 'version' parameter is missing in the source registration.");
 
-        if (!configuration.TryGetValue("csproj", out var csproj))
-            throw new ArgumentException("The 'csproj' parameter is missing in the source registration.");
+        if (!configuration.TryGetValue("entrypoint", out var entrypoint))
+            throw new ArgumentException("The 'entrypoint' parameter is missing in the source registration.");
 
         var sourceFolderPath = Path.Combine(path, version);
 
@@ -215,7 +218,7 @@ internal class PackageController(
             try
             {
                 // Publish project
-                var csprojFilePath = Path.Combine(sourceFolderPath, csproj);
+                var csprojFilePath = Path.Combine(sourceFolderPath, entrypoint);
 
                 await PublishProjectAsync(
                     csprojFilePath,
@@ -265,7 +268,7 @@ internal class PackageController(
 
     private async Task<string[]> GetGitTagsAsync(CancellationToken cancellationToken)
     {
-        const string refPrefix = "refs/tags/";
+        const string REFS_PREFIX = "refs/tags/";
 
         var result = new List<string>();
         var configuration = PackageReference.Configuration;
@@ -283,6 +286,7 @@ internal class PackageController(
         };
 
         using var process = Process.Start(startInfo) ?? throw new Exception("Process is null.");
+
         while (!process.StandardOutput.EndOfStream)
         {
             var refLine = await process.StandardOutput.ReadLineAsync(cancellationToken);
@@ -291,9 +295,9 @@ internal class PackageController(
             {
                 var refString = refLine!.Split('\t')[1];
 
-                if (refString.StartsWith(refPrefix))
+                if (refString.StartsWith(REFS_PREFIX))
                 {
-                    var tag = refString[refPrefix.Length..];
+                    var tag = refString[REFS_PREFIX.Length..];
                     result.Add(tag);
                 }
 
@@ -337,20 +341,20 @@ internal class PackageController(
         if (!configuration.TryGetValue("tag", out var tag))
             throw new ArgumentException("The 'tag' parameter is missing in the source registration.");
 
-        if (!configuration.TryGetValue("csproj", out var csproj))
-            throw new ArgumentException("The 'csproj' parameter is missing in the source registration.");
+        if (!configuration.TryGetValue("entrypoint", out var entrypoint))
+            throw new ArgumentException("The 'entrypoint' parameter is missing in the source registration.");
 
-        var escapedUriWithoutSchemeAndUserInfo = new Uri(repository)
-            .GetComponents(UriComponents.AbsoluteUri & ~UriComponents.Scheme & ~UriComponents.UserInfo, UriFormat.UriEscaped);
+        var escapedUrl_1 = new Uri(repository)
+            .GetComponents(UriComponents.AbsoluteUri & ~UriComponents.UserInfo, UriFormat.UriEscaped);
 
-        var targetFolderPath = Path.Combine(restoreRoot, escapedUriWithoutSchemeAndUserInfo.Replace('/', '_').ToLower(), tag);
+        var targetFolderPath = Path.Combine(restoreRoot, escapedUrl_1.Replace("://", "_").Replace('/', '_'), tag);
 
         if (!Directory.Exists(targetFolderPath) || !Directory.EnumerateFileSystemEntries(targetFolderPath).Any())
         {
             var cloneFolderPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
             var publishFolderPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
 
-            var escapedUriWithoutUserInfo = new Uri(repository)
+            var escapedUrl_2 = new Uri(repository)
                 .GetComponents(UriComponents.AbsoluteUri & ~UriComponents.UserInfo, UriFormat.UriEscaped);
 
             try
@@ -367,6 +371,7 @@ internal class PackageController(
                 };
 
                 using var process = Process.Start(startInfo) ?? throw new Exception("Process is null.");
+
                 await process.WaitForExitAsync(cancellationToken);
 
                 if (process.ExitCode != 0)
@@ -375,17 +380,17 @@ internal class PackageController(
                         ? default :
                         $" Reason: {await process.StandardError.ReadToEndAsync(cancellationToken)}";
 
-                    throw new Exception($"Unable to clone repository {escapedUriWithoutUserInfo}.{error}");
+                    throw new Exception($"Unable to clone repository {escapedUrl_2}.{error}");
                 }
 
                 // Publish project
-                var csprojFilePath = Path.Combine(cloneFolderPath, csproj);
+                var csprojFilePath = Path.Combine(cloneFolderPath, entrypoint);
 
                 await PublishProjectAsync(
                     csprojFilePath,
                     targetFolderPath,
                     publishFolderPath,
-                    escapedUriWithoutUserInfo,
+                    escapedUrl_2,
                     cancellationToken
                 );
 
@@ -394,7 +399,7 @@ internal class PackageController(
             }
             catch
             {
-                // try delete restore folder
+                // Try to delete restore folder
                 try
                 {
                     if (Directory.Exists(targetFolderPath))
@@ -406,7 +411,7 @@ internal class PackageController(
             }
             finally
             {
-                // try delete clone folder
+                // Try to delete clone folder
                 try
                 {
                     if (Directory.Exists(cloneFolderPath))
@@ -414,7 +419,7 @@ internal class PackageController(
                 }
                 catch { }
 
-                // try delete publish folder
+                // Try to delete publish folder
                 try
                 {
                     if (Directory.Exists(publishFolderPath))
