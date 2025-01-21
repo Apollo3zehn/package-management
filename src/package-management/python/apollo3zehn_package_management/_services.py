@@ -185,7 +185,7 @@ class ExtensionHive(Generic[T]):
         if is_builtin_provider:
             raise Exception("The builtin provider is not supported.")
 
-        value_of_T: Type = self.__orig_class__.__args__[0] #pyright: ignore
+        value_of_T: Type = self.__orig_class__.__args__[0] # pyright: ignore
 
         found_types = [
             member[1] for member in inspect.getmembers(module) if \
