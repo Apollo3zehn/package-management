@@ -49,7 +49,7 @@ class PackageController:
         entrypoint = self._package_reference.configuration.get("entrypoint")
 
         if not module_name or not entrypoint:
-            raise ValueError("The 'module_name' and 'entrypoint' parameters are required in the source registration.")
+            raise ValueError("The 'module_name' and 'entrypoint' parameters are required in the package reference.")
 
         if self._module is not None:
             raise Exception("The extension is already loaded.")
@@ -152,7 +152,7 @@ class PackageController:
         path = configuration.get("path")
 
         if not path:
-            raise ValueError("The 'path' parameter is missing in the source registration.")
+            raise ValueError("The 'path' parameter is missing in the package reference.")
 
         if not os.path.exists(path):
             raise FileNotFoundError(f"The extension path {path} does not exist.")
@@ -174,7 +174,7 @@ class PackageController:
         version = configuration.get("version")
 
         if not path or not version:
-            raise ValueError("The 'path' and 'version' parameters are required in the source registration.")
+            raise ValueError("The 'path' and 'version' parameters are required in the package reference.")
 
         source_folder_path = os.path.join(path, version)
 
@@ -204,7 +204,7 @@ class PackageController:
         repository = configuration.get("repository")
 
         if not repository:
-            raise ValueError("The 'repository' parameter is missing in the source registration.")
+            raise ValueError("The 'repository' parameter is missing in the package reference.")
 
         process = await asyncio.create_subprocess_exec(
             "git", "ls-remote", "--tags", "--sort=v:refname", "--refs", repository,
@@ -237,7 +237,7 @@ class PackageController:
         tag = configuration.get("tag")
 
         if not repository or not tag:
-            raise ValueError("The 'repository' and 'tag' parameters are required in the source registration.")
+            raise ValueError("The 'repository' and 'tag' parameters are required in the package reference.")
 
         escaped_uri_1 = PackageController._escape_url(repository).replace("://", "_").replace("/", "_")
         target_folder_path = os.path.join(restore_root, escaped_uri_1, tag)

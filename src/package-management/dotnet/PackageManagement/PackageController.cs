@@ -168,7 +168,7 @@ internal class PackageController(
         var configuration = PackageReference.Configuration;
 
         if (!configuration.TryGetValue("path", out var path))
-            throw new ArgumentException("The 'path' parameter is missing in the source registration.");
+            throw new ArgumentException("The 'path' parameter is missing in the package reference.");
 
         if (!Directory.Exists(path))
             throw new DirectoryNotFoundException($"The extension path {path} does not exist.");
@@ -195,13 +195,13 @@ internal class PackageController(
         var configuration = PackageReference.Configuration;
 
         if (!configuration.TryGetValue("path", out var path))
-            throw new ArgumentException("The 'path' parameter is missing in the source registration.");
+            throw new ArgumentException("The 'path' parameter is missing in the package reference.");
 
         if (!configuration.TryGetValue("version", out var version))
-            throw new ArgumentException("The 'version' parameter is missing in the source registration.");
+            throw new ArgumentException("The 'version' parameter is missing in the package reference.");
 
         if (!configuration.TryGetValue("entrypoint", out var entrypoint))
-            throw new ArgumentException("The 'entrypoint' parameter is missing in the source registration.");
+            throw new ArgumentException("The 'entrypoint' parameter is missing in the package reference.");
 
         var sourceFolderPath = Path.Combine(path, version);
 
@@ -274,7 +274,7 @@ internal class PackageController(
         var configuration = PackageReference.Configuration;
 
         if (!configuration.TryGetValue("repository", out var repository))
-            throw new ArgumentException("The 'repository' parameter is missing in the source registration.");
+            throw new ArgumentException("The 'repository' parameter is missing in the package reference.");
 
         var startInfo = new ProcessStartInfo
         {
@@ -336,13 +336,13 @@ internal class PackageController(
         var configuration = PackageReference.Configuration;
 
         if (!configuration.TryGetValue("repository", out var repository))
-            throw new ArgumentException("The 'repository' parameter is missing in the source registration.");
+            throw new ArgumentException("The 'repository' parameter is missing in the package reference.");
 
         if (!configuration.TryGetValue("tag", out var tag))
-            throw new ArgumentException("The 'tag' parameter is missing in the source registration.");
+            throw new ArgumentException("The 'tag' parameter is missing in the package reference.");
 
         if (!configuration.TryGetValue("entrypoint", out var entrypoint))
-            throw new ArgumentException("The 'entrypoint' parameter is missing in the source registration.");
+            throw new ArgumentException("The 'entrypoint' parameter is missing in the package reference.");
 
         var escapedUrl_1 = new Uri(repository)
             .GetComponents(UriComponents.AbsoluteUri & ~UriComponents.UserInfo, UriFormat.UriEscaped);
