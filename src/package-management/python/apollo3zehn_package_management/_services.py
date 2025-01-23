@@ -158,7 +158,7 @@ class ExtensionHive(Generic[T]):
         type_info = self._get_type_info(full_name)
 
         if type_info is None:
-            raise Exception(f"Could not find extension {full_name} of type {T.__name__}.")
+            raise Exception(f"Could not find extension {full_name} of type {self.__orig_class__.__args__[0].__name__}.") # pyright: ignore
         
         self._logger.debug(f"Instantiate extension {full_name}")
 
