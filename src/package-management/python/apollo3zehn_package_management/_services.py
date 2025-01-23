@@ -3,6 +3,7 @@ import inspect
 import json
 import logging
 import os
+import traceback
 import uuid
 from logging import Logger
 from pathlib import Path
@@ -142,7 +143,7 @@ class ExtensionHive(Generic[T]):
 
             except Exception as ex:
 
-                self._logger.error(f"Loading package failed: {ex}")
+                self._logger.error(f"Loading package failed: {ex}: {traceback.format_exc()}")
 
         self._package_controller_map = package_controller_map
 
