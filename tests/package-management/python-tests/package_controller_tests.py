@@ -30,7 +30,8 @@ async def can_load_and_unload_test():
             configuration={
                 "path": extension_folder_path,
                 "version": version,
-                "entrypoint": "my_package.my_module"
+                "entrypoint": "src",
+                "import": "my_package.my_module"
             }
         )
 
@@ -122,7 +123,7 @@ async def can_restore_local_test():
         await package_controller._restore(restore_root)
 
         # Assert
-        assert os.path.exists(os.path.join(restore_folder_path, "my_package", "my_module.py"))
+        assert os.path.exists(os.path.join(restore_folder_path, "src", "my_package", "my_module.py"))
 
     finally:
         shutil.rmtree(restore_root)

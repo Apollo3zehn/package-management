@@ -46,9 +46,10 @@ class PackageController:
     async def load(self, restore_root: str) -> ModuleType:
 
         entrypoint = self._package_reference.configuration.get("entrypoint")
+        import_path = self._package_reference.configuration.get("import")
 
-        if not entrypoint:
-            raise ValueError("The 'entrypoint' parameter is required in the package reference.")
+        if not entrypoint or not import_path:
+            raise ValueError("The 'entrypoint' and 'import' parameters are required in the package reference.")
 
         if self._module is not None:
             raise Exception("The extension is already loaded.")
@@ -56,22 +57,23 @@ class PackageController:
         if self._package_reference.provider == self.BUILTIN_PROVIDER:
 
             # not implemented (there is no need for it right now)
-            raise NotImplementedError("Loading built-in plugins is not supported.")
+            raise NotImplementedError("Loading built-in extensions is not supported.")
 
         else:
 
             restore_folder_path = await self._restore(restore_root)
-            original_sys_path = sys.path.copy() # Temporarily modify sys.path to include the plugin's environment
+            original_sys_path = sys.path.copy() # Temporarily modify sys.path to include the extension's environment
 
             try:
 
                 minor_version = sys.version_info.minor
                 venv_folder_path = os.path.join(restore_folder_path, ".venv")
+                entrypoint_folder_path = os.path.join(restore_folder_path, entrypoint)
 
-                sys.path.insert(0, restore_folder_path)
+                sys.path.insert(0, entrypoint_folder_path)
                 sys.path.insert(0, os.path.join(venv_folder_path, "lib", f"python3.{minor_version}", "site-packages"))
 
-                self._module = importlib.import_module(entrypoint)
+                self._module = importlib.import_module(import_path)
                 
                 return self._module
 

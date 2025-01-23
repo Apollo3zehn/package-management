@@ -29,7 +29,8 @@ async def can_instantiate_extensions_test():
             configuration={
                 "path": extension_folder_path,
                 "version": version,
-                "entrypoint": "my_package.my_module"
+                "entrypoint": "src",
+                "import": "my_package.my_module"
             }
         )
 
