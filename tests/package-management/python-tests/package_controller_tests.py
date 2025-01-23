@@ -30,8 +30,7 @@ async def can_load_and_unload_test():
             configuration={
                 "path": extension_folder_path,
                 "version": version,
-                "module-name": "foo",
-                "entrypoint": "my_logger.py"
+                "entrypoint": "my_package.my_module"
             }
         )
 
@@ -113,7 +112,7 @@ async def can_restore_local_test():
             configuration={
                 "path": extension_folder_path,
                 "version": version,
-                "entrypoint": "my_logger.py"
+                "entrypoint": "my_package.my_module"
             }
         )
 
@@ -123,7 +122,7 @@ async def can_restore_local_test():
         await package_controller._restore(restore_root)
 
         # Assert
-        assert os.path.exists(os.path.join(restore_folder_path, "my_logger.py"))
+        assert os.path.exists(os.path.join(restore_folder_path, "my_package", "my_module.py"))
 
     finally:
         shutil.rmtree(restore_root)
@@ -178,7 +177,7 @@ async def can_restore_git_tag_test():
             configuration={
                 "repository": "https://github.com/Apollo3zehn/git-tags-provider-test-project",
                 "tag": version,
-                "entrypoint": "my_logger.py"
+                "entrypoint": ""
             }
         )
 

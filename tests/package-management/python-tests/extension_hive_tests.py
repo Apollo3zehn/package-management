@@ -29,8 +29,7 @@ async def can_instantiate_extensions_test():
             configuration={
                 "path": extension_folder_path,
                 "version": version,
-                "module-name": "foo",
-                "entrypoint": "my_logger.py"
+                "entrypoint": "my_package.my_module"
             }
         )
 
@@ -42,7 +41,7 @@ async def can_instantiate_extensions_test():
         await hive.load_packages(package_reference_map)
 
         # instantiate
-        logger = hive.get_instance("foo.MyLogger")
+        logger = hive.get_instance("my_package.my_module.MyLogger")
 
         with pytest.raises(Exception, match=r"c\[_\]"):
             assert logger.setLevel(0)

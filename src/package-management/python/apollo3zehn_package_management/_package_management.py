@@ -45,11 +45,10 @@ class PackageController:
 
     async def load(self, restore_root: str) -> ModuleType:
 
-        module_name = self._package_reference.configuration.get("module-name")
         entrypoint = self._package_reference.configuration.get("entrypoint")
 
-        if not module_name or not entrypoint:
-            raise ValueError("The 'module_name' and 'entrypoint' parameters are required in the package reference.")
+        if not entrypoint:
+            raise ValueError("The 'entrypoint' parameter is required in the package reference.")
 
         if self._module is not None:
             raise Exception("The extension is already loaded.")
@@ -62,15 +61,6 @@ class PackageController:
         else:
 
             restore_folder_path = await self._restore(restore_root)
-            extension_path = os.path.join(restore_folder_path, entrypoint)
-            
-            # https://docs.python.org/3/library/importlib.html#importing-a-source-file-directly
-            module_spec = importlib.util.spec_from_file_location(module_name, extension_path)
-
-            if module_spec is None:
-                raise Exception("Unable to create spec from file location.")
-
-            self._module  = importlib.util.module_from_spec(module_spec)
             original_sys_path = sys.path.copy() # Temporarily modify sys.path to include the plugin's environment
 
             try:
@@ -78,12 +68,10 @@ class PackageController:
                 minor_version = sys.version_info.minor
                 venv_folder_path = os.path.join(restore_folder_path, ".venv")
 
+                sys.path.insert(0, restore_folder_path)
                 sys.path.insert(0, os.path.join(venv_folder_path, "lib", f"python3.{minor_version}", "site-packages"))
 
-                if module_spec.loader is None:
-                    raise Exception("This should never happen.")
-
-                module_spec.loader.exec_module(self._module)
+                self._module = importlib.import_module(entrypoint)
                 
                 return self._module
 
@@ -116,9 +104,9 @@ class PackageController:
             raise ValueError(f"The provider {self._package_reference.provider} is not supported.")
         
         requirements_file_path = os.path.join(restore_folder_path, "requirements.txt")
-        
-        if os.path.exists(requirements_file_path):
-            venv_folder_path = os.path.join(restore_folder_path, ".venv")
+        venv_folder_path = os.path.join(restore_folder_path, ".venv")
+
+        if os.path.exists(requirements_file_path) and not os.path.exists(venv_folder_path):
             PackageController._create_virtual_environment(venv_folder_path, requirements_file_path)
 
         return restore_folder_path
