@@ -143,7 +143,7 @@ class ExtensionHive(Generic[T]):
 
             except Exception as ex:
 
-                self._logger.error(f"Loading package failed: {ex}: {traceback.format_exc()}")
+                self._logger.error(f"Loading package failed: {ex}\n{traceback.format_exc()}")
 
         self._package_controller_map = package_controller_map
 
