@@ -1,3 +1,7 @@
+## v1.0.0-beta.4 - 2025-01-28
+
+- Modify GetPackageReference method
+
 ## v1.0.0-beta.3 - 2025-01-23
 
 - Allow more flexible python extension folder layouts

@@ -19,10 +19,10 @@ public interface IExtensionHive<T> where T : class
     IEnumerable<Type> GetExtensions();
 
     /// <summary>
-    /// Gets the package reference ID for the specified type name.
+    /// Gets the package reference for the specified type name.
     /// </summary>
     /// <param name="fullName">The type name.</param>
-    Guid GetPackageReferenceId(string fullName);
+    (Guid Id, PackageReference Reference) GetPackageReference(string fullName);
 
     /// <summary>
     /// Create a new extension instance.
@@ -132,12 +132,12 @@ internal class ExtensionHive<T>(
             return _packageControllerMap.SelectMany(entry => entry.Value.Item2);
     }
 
-    public Guid GetPackageReferenceId(string fullName)
+    public (Guid Id, PackageReference Reference) GetPackageReference(string fullName)
     {
-        if (!TryGetTypeInfo(fullName, out var packageReferenceId, out var _, out var _))
+        if (!TryGetTypeInfo(fullName, out var packageReferenceId, out var packageController, out var _))
             throw new Exception($"Could not find extension {fullName} of type {typeof(T).FullName}.");
 
-        return packageReferenceId;
+        return (packageReferenceId, packageController.PackageReference);
     }
 
     public T GetInstance(string fullName)
