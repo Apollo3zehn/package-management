@@ -28,7 +28,7 @@ public interface IExtensionHive<T> where T : class
     /// Create a new extension instance.
     /// </summary>
     /// <param name="fullName">The type name.</param>
-    T GetInstance(string fullName);
+    Type GetExtensionType(string fullName);
 
     /// <summary>
     /// Loads the map of packages.
@@ -140,16 +140,12 @@ internal class ExtensionHive<T>(
         return (packageReferenceId, packageController.PackageReference);
     }
 
-    public T GetInstance(string fullName)
+    public Type GetExtensionType(string fullName)
     {
         if (!TryGetTypeInfo(fullName, out var _, out var _, out var type))
             throw new Exception($"Could not find extension {fullName} of type {typeof(T).FullName}.");
 
-        _logger.LogDebug("Instantiate extension {ExtensionType}", fullName);
-
-        var instance = (T)(Activator.CreateInstance(type) ?? throw new Exception("instance is null"));
-
-        return instance;
+        return type;
     }
 
     private bool TryGetTypeInfo(

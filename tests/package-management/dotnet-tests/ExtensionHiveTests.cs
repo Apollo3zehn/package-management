@@ -57,7 +57,8 @@ public class ExtensionHiveTests
             await hive.LoadPackagesAsync(packageReferenceMap, new Progress<double>(), CancellationToken.None);
 
             // instantiate
-            var logger = hive.GetInstance("Foo.MyLogger");
+            var type = hive.GetExtensionType("Foo.MyLogger");
+            var logger = (ILogger)Activator.CreateInstance(type)!;
 
             Assert.NotNull(logger);
             Assert.False(logger.IsEnabled(LogLevel.Trace));

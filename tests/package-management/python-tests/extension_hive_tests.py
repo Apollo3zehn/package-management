@@ -2,6 +2,7 @@ import logging
 import os
 import shutil
 import tempfile
+from typing import cast
 import uuid
 from unittest.mock import Mock
 
@@ -42,7 +43,8 @@ async def can_instantiate_extensions_test():
         await hive.load_packages(package_reference_map)
 
         # instantiate
-        logger = hive.get_instance("my_package.my_module.MyLogger")
+        loggerType = hive.get_extension_type("my_package.my_module.MyLogger")
+        logger =  cast(logging.Logger, loggerType())
 
         with pytest.raises(Exception, match=r"c\[_\]"):
             assert logger.setLevel(0)

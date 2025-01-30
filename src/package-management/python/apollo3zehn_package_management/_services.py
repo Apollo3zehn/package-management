@@ -154,18 +154,14 @@ class ExtensionHive(Generic[T]):
 
         return [type for _, (_, types) in self._package_controller_map.items() for type in types]
 
-    def get_instance(self, full_name: str) -> T:
+    def get_extension_type(self, full_name: str) -> Type:
 
         type_info = self._get_type_info(full_name)
 
         if type_info is None:
             raise Exception(f"Could not find extension {full_name} of type {self.__orig_class__.__args__[0].__name__}.") # pyright: ignore
         
-        self._logger.debug(f"Instantiate extension {full_name}")
-
-        instance = type_info[2]()
-
-        return cast(T, instance)
+        return type_info[2]
 
     def _get_type_info(self, full_name: str) -> Optional[tuple[UUID,PackageController, Type]]:
 
