@@ -1,3 +1,7 @@
+## v1.0.0-beta.5 - 2025-01-30
+
+- ExtensionHive now returns type instead of instance
+
 ## v1.0.0-beta.4 - 2025-01-28
 
 - Modify GetPackageReference method
