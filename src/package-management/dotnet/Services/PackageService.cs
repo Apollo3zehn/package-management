@@ -21,8 +21,15 @@ public interface IPackageService
     /// <summary>
     /// Tries to get the requested package reference. Returns null if the package reference does not exist.
     /// </summary>
-    /// <param name="packageReferenceId">The package reference ID.</param>
+    /// <param name="packageReferenceId">The package reference identifier.</param>
     Task<PackageReference?> GetAsync(Guid packageReferenceId);
+
+    /// <summary>
+    /// Tries to updated an existing package reference. Returns false if the package reference to update does not exist.
+    /// </summary>
+    /// <param name="packageReferenceId">The identifier of the package reference to update.</param>
+    /// <param name="packageReference">The package reference which replaces the existing one.</param>
+    Task<bool> TryUpdateAsync(Guid packageReferenceId, PackageReference packageReference);
 
     /// <summary>
     /// Deletes a package reference.
@@ -59,8 +66,7 @@ internal class PackageService(
 
     private readonly ILoggerFactory _loggerFactory = loggerFactory;
 
-    public Task<Guid> PutAsync(
-        PackageReference packageReference)
+    public Task<Guid> PutAsync(PackageReference packageReference)
     {
         return InteractWithPackageReferenceMapAsync(packageReferenceMap =>
         {
@@ -80,6 +86,27 @@ internal class PackageService(
 
             return packageReference;
         }, saveChanges: false);
+    }
+
+    public Task<bool> TryUpdateAsync(Guid packageReferenceId, PackageReference packageReference)
+    {
+        return InteractWithPackageReferenceMapAsync(packageReferenceMap =>
+        {
+            /* Proceed only if package reference already exists! 
+             * We do not want package reference IDs being set from
+             * outside.
+             */
+            if (packageReferenceMap.ContainsKey(packageReferenceId))
+            {
+                packageReferenceMap[packageReferenceId] = packageReference;
+                return true;
+            }
+
+            else
+            {
+                return false;
+            }
+        }, saveChanges: true);
     }
 
     public Task DeleteAsync(Guid packageReferenceId)

@@ -1,3 +1,7 @@
+## v1.0.0-beta.6 - 2025-02-13
+
+- Add update support for package references
+
 ## v1.0.0-beta.5 - 2025-01-30
 
 - ExtensionHive now returns type instead of instance

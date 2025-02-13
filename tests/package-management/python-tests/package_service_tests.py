@@ -69,6 +69,55 @@ async def can_get_package_reference_test():
     # Assert
     assert json.dumps(JsonEncoder.encode(actual)) == \
         json.dumps(JsonEncoder.encode(package_reference_map[id2]))
+    
+async def can_try_update_package_reference_test():
+
+    # Arrange
+    id1 = uuid.uuid4()
+    id2 = uuid.uuid4()
+
+    package_reference_map = {
+        id1: PackageReference(
+            provider="foo",
+            configuration=cast(dict[str, str], None)
+        ),
+        id2: PackageReference(
+            provider="bar",
+            configuration=cast(dict[str, str], None)
+        )
+    }
+
+    json_value = JsonEncoder.encode(package_reference_map)
+
+    with tempfile.NamedTemporaryFile(delete=True) as temp_file:
+        config_folder_path = temp_file.name
+
+    os.makedirs(config_folder_path)
+
+    with open(os.path.join(config_folder_path, "packages.json"), "w") as file:
+        json.dump(json_value, file)
+        
+    package_service = PackageService(config_folder_path)
+
+    new_package_reference = PackageReference(
+        provider="baz",
+        configuration=cast(dict[str, str], None)
+    )
+
+    expected = package_reference_map.copy()
+    expected[id1] = new_package_reference
+
+    # Act
+    success = await package_service.try_update(id1, new_package_reference)
+
+    # Assert
+    assert success
+
+    with open(os.path.join(config_folder_path, "packages.json")) as json_file:
+        actual = json.load(json_file)
+
+    assert json.dumps(JsonEncoder.encode(actual)) == \
+        json.dumps(JsonEncoder.encode(expected))
 
 async def can_delete_package_test():
 

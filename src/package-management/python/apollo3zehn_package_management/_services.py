@@ -47,6 +47,22 @@ class PackageService:
             save_changes=False
         )
     
+    def try_update(self, package_reference_id: UUID, package_reference: PackageReference) -> Awaitable[bool]:
+
+        return self._interact_with_package_reference_map(
+            lambda package_reference_map: self._try_update_internal(package_reference_id, package_reference, package_reference_map),
+            save_changes=True
+        )
+    
+    def _try_update_internal(self, package_reference_id: UUID, package_reference: PackageReference, package_reference_map: dict[UUID, PackageReference]) -> bool:
+
+        if package_reference_id in package_reference_map:
+            package_reference_map[package_reference_id] = package_reference
+            return True
+        
+        else:
+            return False
+    
     def delete(self, package_reference_id: UUID) -> Awaitable:
 
         return self._interact_with_package_reference_map(

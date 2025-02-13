@@ -72,6 +72,52 @@ public class PackageServiceTests
     }
 
     [Fact]
+    public async Task CanTryUpdatePackageReference()
+    {
+        // Arrange
+        var id1 = Guid.NewGuid();
+        var id2 = Guid.NewGuid();
+
+        var packageReferenceMap = new Dictionary<Guid, PackageReference>()
+        {
+            [id1] = new PackageReference(
+                Provider: "foo",
+                Configuration: default!
+            ),
+            [id2] = new PackageReference(
+                Provider: "bar",
+                Configuration: default!
+            )
+        };
+
+        var filePath = Path.GetTempFileName();
+        var packageService = GetPackageService(filePath, packageReferenceMap);
+
+        var newPackageReference = new PackageReference(
+            Provider: "baz",
+            Configuration: default!
+        );
+
+        var expected = packageReferenceMap
+            .ToDictionary(x => x.Key, x => x.Value);
+
+        expected[id1] = newPackageReference;
+
+        // Act
+        var success = await packageService.TryUpdateAsync(id1, newPackageReference);
+
+        // Assert
+        Assert.True(success);
+
+        var actual = JsonSerializer.Deserialize<Dictionary<Guid, PackageReference>>(
+            File.ReadAllText(filePath),
+            JsonSerializerOptions.Web
+        );
+
+        Assert.Equivalent(expected, actual, strict: true);
+    }
+
+    [Fact]
     public async Task CanDeletePackage()
     {
         // Arrange
