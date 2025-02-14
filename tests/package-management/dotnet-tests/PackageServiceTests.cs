@@ -32,7 +32,12 @@ public class PackageServiceTests
 
         // Assert
         var jsonString = File.ReadAllText(filePath);
-        var actualPackageReferenceMap = JsonSerializer.Deserialize<Dictionary<Guid, PackageReference>>(jsonString)!;
+
+        var actualPackageReferenceMap = JsonSerializer.Deserialize<Dictionary<Guid, PackageReference>>(
+            jsonString,
+            JsonSerializerOptions.Web
+        )!;
+
         var entry = Assert.Single(actualPackageReferenceMap);
 
         Assert.Equal(expectedId, entry.Key);

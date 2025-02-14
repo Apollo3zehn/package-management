@@ -151,7 +151,7 @@ internal class PackageService(
         {
             if (_databaseService.TryReadPackageReferenceMap(out var jsonString))
             {
-                _cache = JsonSerializer.Deserialize<Dictionary<Guid, PackageReference>>(jsonString)
+                _cache = JsonSerializer.Deserialize<Dictionary<Guid, PackageReference>>(jsonString, JsonSerializerOptions.Web)
                     ?? throw new Exception("packageReferenceMap is null");
             }
 
