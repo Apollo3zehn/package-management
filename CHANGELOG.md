@@ -1,3 +1,7 @@
+## v1.0.0-beta.9 - 2025-02-14
+
+- Fix deserialization of pipelinemap
+
 ## v1.0.0-beta.8 - 2025-02-14
 
 - Fix targets file name
