@@ -1,3 +1,7 @@
+## v1.0.0-beta.7 - 2025-02-14
+
+- Copy XML on publish target
+
 ## v1.0.0-beta.6 - 2025-02-13
 
 - Add update support for package references

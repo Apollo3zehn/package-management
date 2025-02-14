@@ -29,4 +29,15 @@
     <None Include="README.md" Pack="true" PackagePath="/" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="nuget/buildTransitive/*.targets" Pack="true" PackagePath="buildTransitive/$(PackageId).targets" />
+
+    <!-- 
+      Required to automatically set `GeneratePathProperty` to true to make the
+      target in buildTransitive work (i.e. PkgNexus_Sources_StructuredFile != ''):
+      https://learn.microsoft.com/en-us/nuget/consume-packages/package-references-in-project-files 
+    -->
+    <None Include="nuget/tools/dummy" Pack="true" PackagePath="tools/dummy" />
+  </ItemGroup>
+
 </Project>
