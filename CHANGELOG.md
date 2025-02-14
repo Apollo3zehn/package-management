@@ -1,3 +1,7 @@
+## v1.0.0-beta.8 - 2025-02-14
+
+- Fix targets file name
+
 ## v1.0.0-beta.7 - 2025-02-14
 
 - Copy XML on publish target
