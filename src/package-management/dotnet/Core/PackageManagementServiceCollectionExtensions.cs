@@ -6,7 +6,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// <summary>
 /// Extension methods for setting up MVC services in an <see cref="IServiceCollection" />.
 /// </summary>
-public static class MvcServiceCollectionExtensions
+public static class PackageManagementServiceCollectionExtensions
 {
     /// <summary>
     /// Adds services required for the package management.
