@@ -77,6 +77,12 @@ class PackageService:
             save_changes=False
         )
 
+    async def get_versions(self, package_reference: PackageReference) -> List[str]:
+
+        controller = PackageController(package_reference, logging.getLogger("PackageController"))
+
+        return await controller.get_versions()
+
     def _get_package_reference_map(self) -> dict[UUID, PackageReference]:
     
         if self._cache is None:

@@ -46,10 +46,10 @@ public interface IPackageService
     /// <summary>
     /// Gets all package versions.
     /// </summary>
-    /// <param name="packageReferenceId">The package reference.</param>
+    /// <param name="packageReference">The package reference.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     Task<string[]?> GetVersionsAsync(
-        Guid packageReferenceId,
+        PackageReference packageReference,
         CancellationToken cancellationToken);
 }
 
@@ -130,14 +130,9 @@ internal class PackageService(
     }
 
     public async Task<string[]?> GetVersionsAsync(
-        Guid packageReferenceId,
+        PackageReference packageReference,
         CancellationToken cancellationToken)
     {
-        var packageReference = await GetAsync(packageReferenceId);
-
-        if (packageReference is null)
-            return default;
-
         var controller = new PackageController(
             packageReference,
             _loggerFactory.CreateLogger<PackageController>());
