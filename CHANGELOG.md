@@ -1,3 +1,8 @@
+## v1.0.0-beta.10 - 2026-09-15
+
+- Replace GetVersionsAsync(Guid) with GetVersionsAsync(PackageReference)
+- Add Python PackageService.get_versions(package_reference)
+
 ## v1.0.0-beta.9 - 2025-02-14
 
 - Fix deserialization of pipelinemap
