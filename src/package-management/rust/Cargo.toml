@@ -1,0 +1,9 @@
+[package]
+name = "package-management"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+log = "0.4.27"
+md5 = "0.7.0"
+uuid = "1.16.0"

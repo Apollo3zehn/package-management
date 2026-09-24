@@ -1,0 +1,9 @@
+/home/vincent/Documents/Git/GitHub/package-management/src/package-management/rust/target/debug/deps/libasync_process-b2d7cfa0c3003090.rmeta: /home/vincent/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/async-process-2.3.0/src/lib.rs /home/vincent/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/async-process-2.3.0/src/unix.rs /home/vincent/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/async-process-2.3.0/src/reaper/mod.rs /home/vincent/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/async-process-2.3.0/src/reaper/wait.rs /home/vincent/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/async-process-2.3.0/src/reaper/signal.rs
+
+/home/vincent/Documents/Git/GitHub/package-management/src/package-management/rust/target/debug/deps/async_process-b2d7cfa0c3003090.d: /home/vincent/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/async-process-2.3.0/src/lib.rs /home/vincent/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/async-process-2.3.0/src/unix.rs /home/vincent/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/async-process-2.3.0/src/reaper/mod.rs /home/vincent/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/async-process-2.3.0/src/reaper/wait.rs /home/vincent/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/async-process-2.3.0/src/reaper/signal.rs
+
+/home/vincent/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/async-process-2.3.0/src/lib.rs:
+/home/vincent/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/async-process-2.3.0/src/unix.rs:
+/home/vincent/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/async-process-2.3.0/src/reaper/mod.rs:
+/home/vincent/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/async-process-2.3.0/src/reaper/wait.rs:
+/home/vincent/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/async-process-2.3.0/src/reaper/signal.rs:
