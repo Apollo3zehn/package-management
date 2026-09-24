@@ -1,3 +1,7 @@
+## v1.0.0-beta.11 - 2026-09-24
+
+- Stamp published extension assemblies from package selector versions
+
 ## v1.0.0-beta.10 - 2026-09-15
 
 - Replace GetVersionsAsync(Guid) with GetVersionsAsync(PackageReference)

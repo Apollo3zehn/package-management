@@ -14,6 +14,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.0" />
+    <PackageReference Include="NuGet.Versioning" Version="6.13.2" />
   </ItemGroup>
 
   <!-- This prevents the package to be rebuilt when dotnet test is executed. -->

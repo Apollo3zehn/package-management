@@ -5,6 +5,7 @@ using Apollo3zehn.PackageManagement;
 using Apollo3zehn.PackageManagement.Core;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Xunit;
@@ -170,6 +171,63 @@ public class PackageControllerTests
         finally
         {
             Directory.Delete(restoreRoot, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task CanStampAssemblyVersion_local()
+    {
+        // Arrange
+        var version = "v0.1.0";
+        var extensionFolderPath = "../../../../tests/resources/test-extension";
+
+        var restoreRoot = Path.Combine(Path.GetTempPath(), $"PackageManagement.Tests.{Guid.NewGuid()}");
+        Directory.CreateDirectory(restoreRoot);
+
+        try
+        {
+            var packageReference = new PackageReference(
+                Provider: "local",
+                Configuration: new Dictionary<string, string>
+                {
+                    ["path"] = extensionFolderPath,
+                    ["version"] = version,
+                    ["entrypoint"] = "test-extension.csproj"
+                }
+            );
+
+            var packageController = new PackageController(packageReference, NullLogger<PackageController>.Instance);
+
+            // Act
+            var assembly = await packageController.LoadAsync(restoreRoot, CancellationToken.None);
+
+            try
+            {
+                var informationalVersion = assembly
+                    .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
+                    ?.InformationalVersion;
+
+                // Assert
+                Assert.StartsWith("0.1.0", informationalVersion);
+            }
+            finally
+            {
+                var weakReference = packageController.Unload();
+
+                for (int i = 0; weakReference.IsAlive && i < 10; i++)
+                {
+                    GC.Collect();
+                    GC.WaitForPendingFinalizers();
+                }
+            }
+        }
+        finally
+        {
+            try
+            {
+                Directory.Delete(restoreRoot, recursive: true);
+            }
+            catch { }
         }
     }
 

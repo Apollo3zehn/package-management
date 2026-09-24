@@ -3,6 +3,7 @@
 
 using Apollo3zehn.PackageManagement.Core;
 using Microsoft.Extensions.Logging;
+using NuGet.Versioning;
 using System.Diagnostics;
 using System.Reflection;
 
@@ -130,6 +131,8 @@ internal class PackageController(
         string targetFolderPath,
         string publishFolderPath,
         string repository,
+        string selector,
+        ILogger logger,
         CancellationToken cancellationToken
     )
     {
@@ -138,11 +141,26 @@ internal class PackageController(
 
         Directory.CreateDirectory(targetFolderPath);
 
+        var buildVersion = GetBuildVersion(selector);
+        var versionArgument = string.Empty;
+
+        if (NuGetVersion.TryParse(buildVersion, out _))
+        {
+            versionArgument = $" /p:Version={buildVersion}";
+        }
+        else
+        {
+            logger.LogWarning(
+                "The package selector '{Selector}' produced invalid build version '{BuildVersion}'. Publishing without version stamping.",
+                selector,
+                buildVersion);
+        }
+
         var startInfo = new ProcessStartInfo
         {
             CreateNoWindow = true,
             FileName = "dotnet",
-            Arguments = $"publish {csprojFilePath} -c Release -o {publishFolderPath}",
+            Arguments = $"publish {csprojFilePath} -c Release -o {publishFolderPath}{versionArgument}",
             RedirectStandardError = true
         };
 
@@ -158,6 +176,15 @@ internal class PackageController(
 
             throw new Exception($"Unable to publish project {repository}.{error}");
         }
+    }
+
+    private static string GetBuildVersion(string version)
+    {
+        var versionToken = version
+            .Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries)
+            .FirstOrDefault() ?? string.Empty;
+
+        return versionToken.StartsWith('v') ? versionToken[1..] : versionToken;
     }
 
     #region local
@@ -225,6 +252,8 @@ internal class PackageController(
                     targetFolderPath,
                     publishFolderPath,
                     path,
+                    version,
+                    _logger,
                     cancellationToken
                 );
 
@@ -391,6 +420,8 @@ internal class PackageController(
                     targetFolderPath,
                     publishFolderPath,
                     escapedUrl_2,
+                    tag,
+                    _logger,
                     cancellationToken
                 );
 
