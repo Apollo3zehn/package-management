@@ -6,6 +6,7 @@ using Apollo3zehn.PackageManagement.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
+using Other;
 using Xunit;
 
 namespace Services;
@@ -15,8 +16,6 @@ public class ExtensionHiveTests
     [Fact]
     public async Task CanInstantiateExtensions()
     {
-        var extensionFolderPath = "../../../../tests/resources/test-extension";
-
         // create restore folder
         var restoreRoot = Path.Combine(Path.GetTempPath(), $"PackageManagement.Tests.{Guid.NewGuid()}");
         Directory.CreateDirectory(restoreRoot);
@@ -40,11 +39,11 @@ public class ExtensionHiveTests
             var version = "v0.1.0";
 
             var packageReference = new PackageReference(
-                Provider: "local",
+                Provider: "git-tag",
                 Configuration: new Dictionary<string, string>
                 {
-                    ["path"] = extensionFolderPath,
-                    ["version"] = version,
+                    ["repository"] = TestExtensionRepository.Repository,
+                    ["tag"] = version,
                     ["entrypoint"] = "test-extension.csproj"
                 }
             );

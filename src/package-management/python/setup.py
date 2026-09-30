@@ -20,7 +20,7 @@ with open(os.path.join(source_dir, "README.md"), "r") as fh:
 setuptools.setup(
     name="apollo3zehn-package-management",
     version=str(os.getenv("PYPI_VERSION")),
-    description="A collection of types to easily implement a plugin system in your Python application. The source code of individual extensions can be located in remote git repositories or in a local folder structure.",
+    description="A collection of types to easily implement a plugin system in your Python application. The source code of individual extensions can be located in remote git repositories or local git repositories.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     author=str(os.getenv("AUTHORS")),

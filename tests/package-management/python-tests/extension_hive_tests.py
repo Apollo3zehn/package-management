@@ -10,12 +10,12 @@ import pytest
 from apollo3zehn_package_management import PackageReference
 from apollo3zehn_package_management._services import ExtensionHive
 
+from _test_extension_repository import get_test_extension_repository
+
 
 @pytest.mark.asyncio
 async def can_instantiate_extensions_test():
     
-    extension_folder_path = "tests/resources/test-extension"
-
     # create restore folder
     restore_root = os.path.join(tempfile.gettempdir(), f"PackageManagement.Tests.{uuid.uuid4()}")
     os.makedirs(restore_root)
@@ -23,13 +23,11 @@ async def can_instantiate_extensions_test():
     try:
 
         # load packages
-        version = "v0.1.0"
-
         package_reference = PackageReference(
-            provider="local",
+            provider="git-tag",
             configuration={
-                "path": extension_folder_path,
-                "version": version,
+                "repository": get_test_extension_repository(),
+                "tag": "v0.1.0",
                 "entrypoint": "src",
                 "import": "my_package.my_module"
             }
@@ -51,4 +49,4 @@ async def can_instantiate_extensions_test():
 
     finally:
 
-        shutil.rmtree(restore_root)
+        shutil.rmtree(restore_root, ignore_errors=True)

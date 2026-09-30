@@ -1,7 +1,6 @@
 ﻿// MIT License
 // Copyright (c) [2024] [Apollo3zehn]
 
-using Apollo3zehn.PackageManagement.Core;
 using Microsoft.Extensions.Logging;
 using NuGet.Versioning;
 using System.Diagnostics;
@@ -31,7 +30,6 @@ internal class PackageController(
         var result = PackageReference.Provider switch
         {
             BUILTIN_PROVIDER => ["current"],
-            "local" => await GetLocalVersionsAsync(cancellationToken),
             "git-tag" => await GetGitTagsAsync(cancellationToken),
             _ => throw new ArgumentException($"The provider {PackageReference.Provider} is not supported."),
         };
@@ -91,7 +89,6 @@ internal class PackageController(
 
         var restoreFolderPath = PackageReference.Provider switch
         {
-            "local" => await RestoreLocalAsync(actualRestoreRoot, cancellationToken),
             "git-tag" => await RestoreGitTagAsync(actualRestoreRoot, cancellationToken),
             _ => throw new ArgumentException($"The provider {PackageReference.Provider} is not supported."),
         };
@@ -180,118 +177,8 @@ internal class PackageController(
 
     private static string GetBuildVersion(string version)
     {
-        var versionToken = version
-            .Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries)
-            .FirstOrDefault() ?? string.Empty;
-
-        return versionToken.StartsWith('v') ? versionToken[1..] : versionToken;
+        return version.StartsWith('v') ? version[1..] : version;
     }
-
-    #region local
-
-    private Task<string[]> GetLocalVersionsAsync(CancellationToken cancellationToken)
-    {
-        var rawResult = new List<string>();
-        var configuration = PackageReference.Configuration;
-
-        if (!configuration.TryGetValue("path", out var path))
-            throw new ArgumentException("The 'path' parameter is missing in the package reference.");
-
-        if (!Directory.Exists(path))
-            throw new DirectoryNotFoundException($"The extension path {path} does not exist.");
-
-        foreach (var folderPath in Directory.EnumerateDirectories(path))
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            var folderName = Path.GetFileName(folderPath);
-            rawResult.Add(folderName);
-            _logger.LogDebug("Found package version {PackageVersion}", folderName);
-        }
-
-        var result = rawResult
-            .OrderBy(value => value)
-            .Reverse()
-            .ToArray();
-
-        return Task.FromResult(result);
-    }
-
-    private async Task<string> RestoreLocalAsync(string restoreRoot, CancellationToken cancellationToken)
-    {
-        var configuration = PackageReference.Configuration;
-
-        if (!configuration.TryGetValue("path", out var path))
-            throw new ArgumentException("The 'path' parameter is missing in the package reference.");
-
-        if (!configuration.TryGetValue("version", out var version))
-            throw new ArgumentException("The 'version' parameter is missing in the package reference.");
-
-        if (!configuration.TryGetValue("entrypoint", out var entrypoint))
-            throw new ArgumentException("The 'entrypoint' parameter is missing in the package reference.");
-
-        var sourceFolderPath = Path.Combine(path, version);
-
-        if (!Directory.Exists(sourceFolderPath))
-            throw new DirectoryNotFoundException($"The source path {sourceFolderPath} does not exist.");
-
-        var pathHash = new Guid(path.Hash()).ToString();
-        var targetFolderPath = Path.Combine(restoreRoot, pathHash, version);
-
-        if (!Directory.Exists(targetFolderPath) || !Directory.EnumerateFileSystemEntries(targetFolderPath).Any())
-        {
-            var publishFolderPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
-
-            try
-            {
-                // Publish project
-                var csprojFilePath = Path.Combine(sourceFolderPath, entrypoint);
-
-                await PublishProjectAsync(
-                    csprojFilePath,
-                    targetFolderPath,
-                    publishFolderPath,
-                    path,
-                    version,
-                    _logger,
-                    cancellationToken
-                );
-
-                // Clone folder
-                CloneFolder(publishFolderPath, targetFolderPath);
-            }
-            catch
-            {
-                // try delete restore folder
-                try
-                {
-                    if (Directory.Exists(targetFolderPath))
-                        Directory.Delete(targetFolderPath, recursive: true);
-                }
-                catch { }
-
-                throw;
-            }
-            finally
-            {
-                // try delete publish folder
-                try
-                {
-                    if (Directory.Exists(publishFolderPath))
-                        Directory.Delete(publishFolderPath, recursive: true);
-                }
-                catch { }
-            }
-        }
-        else
-        {
-            _logger.LogDebug("Package is already restored");
-        }
-
-        return targetFolderPath;
-    }
-
-    #endregion
 
     #region git-tag
 

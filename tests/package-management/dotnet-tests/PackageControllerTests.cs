@@ -1,8 +1,7 @@
-﻿// MIT License
+// MIT License
 // Copyright (c) [2024] [Apollo3zehn]
 
 using Apollo3zehn.PackageManagement;
-using Apollo3zehn.PackageManagement.Core;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using System.Reflection;
@@ -20,9 +19,6 @@ public class PackageControllerTests
     public async Task CanLoadAndUnload()
     {
         // Arrange
-        var extensionFolderPath = "../../../../tests/resources/test-extension";
-        var extensionFolderPathHash = new Guid(extensionFolderPath.Hash()).ToString();
-
         var restoreRoot = Path.Combine(Path.GetTempPath(), $"PackageManagement.Tests.{Guid.NewGuid()}");
         Directory.CreateDirectory(restoreRoot);
 
@@ -31,16 +27,18 @@ public class PackageControllerTests
             var version = "v0.1.0";
 
             var packageReference = new PackageReference(
-                Provider: "local",
+                Provider: "git-tag",
                 Configuration: new Dictionary<string, string>
                 {
-                    ["path"] = extensionFolderPath,
-                    ["version"] = version,
+                    ["repository"] = TestExtensionRepository.Repository,
+                    ["tag"] = version,
                     ["entrypoint"] = "test-extension.csproj"
                 }
             );
 
-            var fileToDelete = Path.Combine(restoreRoot, "local", extensionFolderPathHash, version, "test-extension.dll");
+            var packageController = new PackageController(packageReference, NullLogger<PackageController>.Instance);
+            var restoreFolderPath = await packageController.RestoreAsync(restoreRoot, CancellationToken.None);
+            var fileToDelete = Path.Combine(restoreFolderPath, "test-extension.dll");
 
             // Act
             var weakReference = await Load_Run_and_Unload_Async(restoreRoot, fileToDelete, packageReference);
@@ -93,28 +91,28 @@ public class PackageControllerTests
 
     #endregion
 
-    #region Provider: local
+    #region Provider: git_tag local
 
     [Fact]
-    public async Task CanGetVersions_local()
+    public async Task CanGetVersions_git_tag_local()
     {
         // Arrange
         var expected = new[]
         {
-            "v2.0.0 postfix",
-            "v1.1.1 postfix",
-            "v1.0.1 postfix",
-            "v1.0.0-beta2+12347 postfix",
-            "v1.0.0-beta1+12346 postfix",
-            "v1.0.0-alpha1+12345 postfix",
+            "v2.0.0",
+            "v1.1.1",
+            "v1.0.1",
+            "v1.0.0-beta2+12347",
+            "v1.0.0-beta1+12346",
+            "v1.0.0-alpha1+12345",
             "v0.1.0"
         };
 
         var packageReference = new PackageReference(
-            Provider: "local",
+            Provider: "git-tag",
             Configuration: new Dictionary<string, string>
             {
-                ["path"] = "../../../../tests/resources/test-extension",
+                ["repository"] = TestExtensionRepository.Repository,
             }
         );
 
@@ -135,25 +133,22 @@ public class PackageControllerTests
     }
 
     [Fact]
-    public async Task CanRestore_local()
+    public async Task CanRestore_git_tag_local()
     {
         // Arrange
         var version = "v0.1.0";
-        var extensionFolderPath = "../../../../tests/resources/test-extension";
-        var extensionFolderPathHash = new Guid(extensionFolderPath.Hash()).ToString();
 
         var restoreRoot = Path.Combine(Path.GetTempPath(), $"PackageManagement.Tests.{Guid.NewGuid()}");
-        var restoreFolderPath = Path.Combine(restoreRoot, "local", extensionFolderPathHash, version);
         Directory.CreateDirectory(restoreRoot);
 
         try
         {
             var packageReference = new PackageReference(
-                Provider: "local",
+                Provider: "git-tag",
                 Configuration: new Dictionary<string, string>
                 {
-                    ["path"] = extensionFolderPath,
-                    ["version"] = version,
+                    ["repository"] = TestExtensionRepository.Repository,
+                    ["tag"] = version,
                     ["entrypoint"] = "test-extension.csproj"
                 }
             );
@@ -161,7 +156,7 @@ public class PackageControllerTests
             var packageController = new PackageController(packageReference, NullLogger<PackageController>.Instance);
 
             // Act
-            await packageController.RestoreAsync(restoreRoot, CancellationToken.None);
+            var restoreFolderPath = await packageController.RestoreAsync(restoreRoot, CancellationToken.None);
 
             // Assert
             var expectedFilePath = Path.Combine(restoreFolderPath, "test-extension.deps.json");
@@ -175,11 +170,10 @@ public class PackageControllerTests
     }
 
     [Fact]
-    public async Task CanStampAssemblyVersion_local()
+    public async Task CanStampAssemblyVersion_git_tag_local()
     {
         // Arrange
         var version = "v0.1.0";
-        var extensionFolderPath = "../../../../tests/resources/test-extension";
 
         var restoreRoot = Path.Combine(Path.GetTempPath(), $"PackageManagement.Tests.{Guid.NewGuid()}");
         Directory.CreateDirectory(restoreRoot);
@@ -187,11 +181,11 @@ public class PackageControllerTests
         try
         {
             var packageReference = new PackageReference(
-                Provider: "local",
+                Provider: "git-tag",
                 Configuration: new Dictionary<string, string>
                 {
-                    ["path"] = extensionFolderPath,
-                    ["version"] = version,
+                    ["repository"] = TestExtensionRepository.Repository,
+                    ["tag"] = version,
                     ["entrypoint"] = "test-extension.csproj"
                 }
             );

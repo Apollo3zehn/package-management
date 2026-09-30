@@ -1,5 +1,4 @@
 import asyncio
-import hashlib
 import importlib.util
 import os
 import shutil
@@ -33,9 +32,6 @@ class PackageController:
 
         if self._package_reference.provider == self.BUILTIN_PROVIDER:
             return ["current"]
-        
-        elif self._package_reference.provider == "local":
-            return await self._get_local_versions()
         
         elif self._package_reference.provider == "git-tag":
             return await self._get_git_tags()
@@ -96,10 +92,7 @@ class PackageController:
 
         restore_folder_path: str
 
-        if self._package_reference.provider == "local":
-            restore_folder_path = await self._restore_local(actual_restore_root)
-        
-        elif self._package_reference.provider == "git-tag":
+        if self._package_reference.provider == "git-tag":
             restore_folder_path = await self._restore_git_tag(actual_restore_root)
         
         else:
@@ -132,55 +125,6 @@ class PackageController:
         if os.path.exists(requirements_file_path):
             pip_executable_path = os.path.join(venv_folder_path, "bin", "pip")
             subprocess.check_call([pip_executable_path, "install", "-r", requirements_file_path])
-
-    #region local
-
-    async def _get_local_versions(self) -> List[str]:
-
-        raw_result = []
-        configuration = self._package_reference.configuration
-        path = configuration.get("path")
-
-        if not path:
-            raise ValueError("The 'path' parameter is missing in the package reference.")
-
-        if not os.path.exists(path):
-            raise FileNotFoundError(f"The extension path {path} does not exist.")
-
-        for folder_path in os.listdir(path):
-
-            folder_name = os.path.basename(folder_path)
-
-            raw_result.append(folder_name)
-            self._logger.debug(f"Found package version {folder_name}")
-
-        return sorted(raw_result, reverse=True)
-
-    async def _restore_local(self, restore_root: str) -> str:
-
-        configuration = self._package_reference.configuration
-
-        path = configuration.get("path")
-        version = configuration.get("version")
-
-        if not path or not version:
-            raise ValueError("The 'path' and 'version' parameters are required in the package reference.")
-
-        source_folder_path = os.path.join(path, version)
-
-        if not os.path.exists(source_folder_path):
-            raise FileNotFoundError(f"The source path {source_folder_path} does not exist.")
-
-        path_hash = PackageController._hash_string(path)
-        target_folder_path = os.path.join(restore_root, path_hash, version)
-
-        if not os.path.exists(target_folder_path) or not os.listdir(target_folder_path):
-            self._clone_folder(source_folder_path, target_folder_path)
-
-        else:
-            self._logger.debug("Package is already restored")
-
-        return target_folder_path
 
     #region git-tag
     
@@ -283,7 +227,7 @@ class PackageController:
     def _escape_url(url: str):
 
         parsed_url = urlparse(url)
-        netloc = cast(str, parsed_url.hostname)
+        netloc = cast(str, parsed_url.hostname or "")
 
         if parsed_url.port is not None:
             netloc += f":{parsed_url.port}"
@@ -291,12 +235,3 @@ class PackageController:
         cleaned_url = parsed_url._replace(netloc=netloc)
 
         return urlunparse(cleaned_url)
-    
-    @staticmethod
-    def _hash_string(value: str) -> str:
-
-        md5 = hashlib.md5()
-        md5.update(value.encode('utf-8'))
-        hashed_string = md5.hexdigest()
-        
-        return hashed_string

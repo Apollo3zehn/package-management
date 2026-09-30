@@ -25,7 +25,6 @@ impl PackageController {
 
         match provider.as_str() {
             Self::BUILTIN_PROVIDER => Ok(vec!["current".to_string()]),
-            "local" => self.get_local_versions().await,
             "git-tag" => self.get_git_tags().await,
             _ => Err(format!("The provider {provider} is not supported.")),
         }
@@ -67,43 +66,12 @@ impl PackageController {
         );
 
         match self.package_reference.provider.as_str() {
-            "local" => self.restore_local(&actual_restore_root).await,
             "git-tag" => self.restore_git_tag(&actual_restore_root).await,
             _ => Err(format!(
                 "The provider {} is not supported.",
                 self.package_reference.provider
             )),
         }
-    }
-
-    async fn restore_local(&self, restore_root: &Path) -> Result<String, String> {
-        let configuration = &self.package_reference.configuration;
-        let path = configuration
-            .get("path")
-            .ok_or("The 'path' parameter is required in the package reference.")?;
-        let version = configuration
-            .get("version")
-            .ok_or("The 'version' parameter is required in the package reference.")?;
-
-        let source_folder_path = Path::new(path).join(version);
-        if !source_folder_path.exists() {
-            return Err(format!(
-                "The source path {:?} does not exist.",
-                source_folder_path
-            ));
-        }
-
-        let path_hash = Self::hash_string(path);
-        let target_folder_path = restore_root.join(path_hash).join(version);
-
-        if !target_folder_path.exists() {
-            fs::create_dir_all(&target_folder_path).map_err(|e| e.to_string())?;
-            self.clone_folder(&source_folder_path, &target_folder_path)?;
-        } else {
-            debug!("Package is already restored");
-        }
-
-        Ok(target_folder_path.to_string_lossy().to_string())
     }
 
     async fn restore_git_tag(&self, restore_root: &Path) -> Result<String, String> {
@@ -148,30 +116,6 @@ impl PackageController {
         }
 
         Ok(target_folder_path.to_string_lossy().to_string())
-    }
-
-    async fn get_local_versions(&self) -> Result<Vec<String>, String> {
-        let configuration = &self.package_reference.configuration;
-        let path = configuration
-            .get("path")
-            .ok_or("The 'path' parameter is missing in the package reference.")?;
-
-        if !Path::new(path).exists() {
-            return Err(format!("The extension path {} does not exist.", path));
-        }
-
-        let mut versions = vec![];
-        for entry in fs::read_dir(path).map_err(|e| e.to_string())? {
-            let entry = entry.map_err(|e| e.to_string())?;
-            if entry.file_type().map_err(|e| e.to_string())?.is_dir() {
-                if let Some(folder_name) = entry.file_name().to_str() {
-                    versions.push(folder_name.to_string());
-                }
-            }
-        }
-
-        versions.sort_by(|a, b| b.cmp(a));
-        Ok(versions)
     }
 
     async fn get_git_tags(&self) -> Result<Vec<String>, String> {
@@ -228,9 +172,4 @@ impl PackageController {
         url.replace("://", "_").replace('/', "_")
     }
 
-    fn hash_string(value: &str) -> String {
-        let digest = md5::compute(value);
-
-        format!("{:x}", digest)
-    }
 }

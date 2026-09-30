@@ -8,8 +8,9 @@ from unittest.mock import Mock
 
 import pytest
 from apollo3zehn_package_management import PackageReference
-from apollo3zehn_package_management._package_management import \
-    PackageController
+from apollo3zehn_package_management._package_management import PackageController
+
+from _test_extension_repository import get_test_extension_repository
 
 
 #region Load
@@ -17,19 +18,16 @@ from apollo3zehn_package_management._package_management import \
 async def can_load_and_unload_test():
 
     # Arrange
-    extension_folder_path = "tests/resources/test-extension"
     restore_root = os.path.join(tempfile.gettempdir(), f"PackageManagement.Tests.{uuid.uuid4()}")
     os.makedirs(restore_root)
 
     try:
 
-        version = "v0.1.0"
-
         package_reference = PackageReference(
-            provider="local",
+            provider="git-tag",
             configuration={
-                "path": extension_folder_path,
-                "version": version,
+                "repository": get_test_extension_repository(),
+                "tag": "v0.1.0",
                 "entrypoint": "src",
                 "import": "my_package.my_module"
             }
@@ -40,10 +38,7 @@ async def can_load_and_unload_test():
 
     finally:
 
-        try:
-            os.rmdir(restore_root)
-        except:
-            pass
+        shutil.rmtree(restore_root, ignore_errors=True)
 
 async def _load_run_and_unload(restore_root, package_reference):
     
@@ -63,26 +58,26 @@ async def _load_run_and_unload(restore_root, package_reference):
     # unload
     package_controller.unload()
 
-#region Provider: local
+#region Provider: git_tag local
 
 @pytest.mark.asyncio
-async def can_get_versions_local_test():
+async def can_get_versions_git_tag_local_test():
 
     # Arrange
     expected = [
-        "v2.0.0 postfix",
-        "v1.1.1 postfix",
-        "v1.0.1 postfix",
-        "v1.0.0-beta2+12347 postfix",
-        "v1.0.0-beta1+12346 postfix",
-        "v1.0.0-alpha1+12345 postfix",
+        "v2.0.0",
+        "v1.1.1",
+        "v1.0.1",
+        "v1.0.0-beta2+12347",
+        "v1.0.0-beta1+12346",
+        "v1.0.0-alpha1+12345",
         "v0.1.0"
     ]
 
     package_reference = PackageReference(
-        provider="local",
+        provider="git-tag",
         configuration={
-            "path": "tests/resources/test-extension",
+            "repository": get_test_extension_repository(),
         }
     )
 
@@ -95,38 +90,33 @@ async def can_get_versions_local_test():
     assert expected == actual
 
 @pytest.mark.asyncio
-async def can_restore_local_test():
+async def can_restore_git_tag_local_test():
     
     # Arrange
-    version = "v0.1.0"
-    extension_folder_path = "tests/resources/test-extension"
-    extension_folder_path_hash = PackageController._hash_string(extension_folder_path)
-
     restore_root = os.path.join(tempfile.gettempdir(), f"PackageManagement.Tests.{uuid.uuid4()}")
-    restore_folder_path = os.path.join(restore_root, "local", extension_folder_path_hash, version)
     os.makedirs(restore_root)
 
     try:
 
         package_reference = PackageReference(
-            provider="local",
+            provider="git-tag",
             configuration={
-                "path": extension_folder_path,
-                "version": version,
-                "entrypoint": "my_package.my_module"
+                "repository": get_test_extension_repository(),
+                "tag": "v0.1.0",
+                "entrypoint": "src"
             }
         )
 
         package_controller = PackageController(package_reference, Mock())
 
         # Act        
-        await package_controller._restore(restore_root)
+        restore_folder_path = await package_controller._restore(restore_root)
 
         # Assert
         assert os.path.exists(os.path.join(restore_folder_path, "src", "my_package", "my_module.py"))
 
     finally:
-        shutil.rmtree(restore_root)
+        shutil.rmtree(restore_root, ignore_errors=True)
 
 #region Provider: git_tag
 
@@ -191,4 +181,4 @@ async def can_restore_git_tag_test():
         assert os.path.exists(os.path.join(restore_folder_path, "my_logger.py"))
 
     finally:
-        shutil.rmtree(restore_root)
+        shutil.rmtree(restore_root, ignore_errors=True)

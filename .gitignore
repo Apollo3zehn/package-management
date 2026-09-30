@@ -16,3 +16,6 @@ doc/api/*
 
 # Rust build artifacts
 **/target/
+
+# Test-time git repository for test extension
+tests/resources/test-extension/.git/
