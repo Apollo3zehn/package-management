@@ -1,3 +1,7 @@
+## v1.0.0-beta.13 - 2026-10-15
+
+- Auto accept new SSH host keys
+
 ## v1.0.0-beta.12 - 2026-09-30
 
 - Remove "local" extension provider (use "git-tag" with `file://` URLs for local repositories)
