@@ -20,6 +20,8 @@ class PackageController:
     BUILTIN_ID = UUID("97d297d2-df6f-4c85-9d07-86bc64a041a6")
     BUILTIN_PROVIDER = "builtin"
 
+    GIT_SSH_COMMAND = "ssh -o StrictHostKeyChecking=accept-new"
+
     _module: Optional[ModuleType] = None
 
     def __init__(self, package_reference: PackageReference, logger: Logger):
@@ -142,7 +144,8 @@ class PackageController:
 
         process = await asyncio.create_subprocess_exec(
             "git", "ls-remote", "--tags", "--sort=v:refname", "--refs", repository,
-            stdout=subprocess.PIPE, stderr=subprocess.PIPE
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+            env={**os.environ, "GIT_SSH_COMMAND": PackageController.GIT_SSH_COMMAND}
         )
 
         stdout, stderr = await process.communicate()
@@ -185,7 +188,8 @@ class PackageController:
 
                 process = await asyncio.create_subprocess_exec(
                     "git", "clone", "--depth", "1", "--branch", tag, "--recurse-submodules", repository, clone_folder_path,
-                    stdout=subprocess.PIPE, stderr=subprocess.PIPE
+                    stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                    env={**os.environ, "GIT_SSH_COMMAND": PackageController.GIT_SSH_COMMAND}
                 )
 
                 _, stderr = await process.communicate()

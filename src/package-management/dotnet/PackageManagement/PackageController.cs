@@ -17,6 +17,8 @@ internal class PackageController(
 
     public const string BUILTIN_PROVIDER = "builtin";
 
+    private const string GIT_SSH_COMMAND = "ssh -o StrictHostKeyChecking=accept-new";
+
     private readonly ILogger _logger = logger;
 
     private PackageLoadContext? _loadContext;
@@ -201,6 +203,8 @@ internal class PackageController(
             RedirectStandardError = true
         };
 
+        startInfo.Environment["GIT_SSH_COMMAND"] = GIT_SSH_COMMAND;
+
         using var process = Process.Start(startInfo) ?? throw new Exception("Process is null.");
 
         while (!process.StandardOutput.EndOfStream)
@@ -285,6 +289,8 @@ internal class PackageController(
                     Arguments = $"clone --depth 1 --branch {tag} --recurse-submodules {repository} {cloneFolderPath}",
                     RedirectStandardError = true
                 };
+
+                startInfo.Environment["GIT_SSH_COMMAND"] = GIT_SSH_COMMAND;
 
                 using var process = Process.Start(startInfo) ?? throw new Exception("Process is null.");
 

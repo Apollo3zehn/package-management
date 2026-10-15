@@ -17,6 +17,7 @@ pub struct PackageController {
 impl PackageController {
     pub const BUILTIN_ID: Uuid = Uuid::from_u128(0x97d297d2df6f4c859d0786bc64a041a6);
     pub const BUILTIN_PROVIDER: &'static str = "builtin";
+    const GIT_SSH_COMMAND: &'static str = "ssh -o StrictHostKeyChecking=accept-new";
 
     pub async fn get_versions(&self) -> Result<Vec<String>, String> {
         let provider = &self.package_reference.provider;
@@ -91,6 +92,7 @@ impl PackageController {
             let clone_folder_path_str = clone_folder_path.path().to_string_lossy();
 
             let output = SmolCommand::new("git")
+                .env("GIT_SSH_COMMAND", Self::GIT_SSH_COMMAND)
                 .arg("clone")
                 .arg("--depth")
                 .arg("1")
@@ -125,6 +127,7 @@ impl PackageController {
             .ok_or("The 'repository' parameter is missing in the package reference.")?;
 
         let output = SmolCommand::new("git")
+            .env("GIT_SSH_COMMAND", Self::GIT_SSH_COMMAND)
             .arg("ls-remote")
             .arg("--tags")
             .arg("--sort=v:refname")
